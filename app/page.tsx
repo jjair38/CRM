@@ -17,7 +17,8 @@ import {
   X,
   Wallet,
   Eye,
-  EyeOff
+  EyeOff,
+  RefreshCcw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { db } from '@/lib/firebase';
@@ -43,7 +44,6 @@ import { TransactionsList } from '@/components/TransactionsList';
 import { SummaryCards } from '@/components/SummaryCards';
 import { TransactionModal } from '@/components/TransactionModal';
 import { UpcomingAlerts } from '@/components/UpcomingAlerts';
-import { CashFlowChart } from '@/components/CashFlowChart';
 import { PWAInstallButton } from '@/components/PWAInstallButton';
 
 export default function Home() {
@@ -85,6 +85,10 @@ export default function Home() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingTransaction(null);
+  };
+
+  const handleRefresh = () => {
+    window.location.reload();
   };
 
   if (loading) {
@@ -160,6 +164,15 @@ export default function Home() {
         </button>
       </div>
 
+      {/* Floating Action Button for Mobile */}
+      <button 
+        onClick={handleOpenNewModal}
+        className="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-gold text-black rounded-full shadow-2xl flex items-center justify-center z-50 hover:scale-110 active:scale-95 transition-all"
+        title="Novo Lançamento"
+      >
+        <Plus size={28} />
+      </button>
+
       {/* Sidebar */}
       <aside className={`
         fixed inset-0 z-40 md:relative md:flex md:w-64 flex-col bg-card-bg border-r border-border-dark transition-transform duration-300
@@ -199,6 +212,8 @@ export default function Home() {
               </button>
             );
           })}
+          
+          <PWAInstallButton />
         </nav>
 
         <div className="p-4 border-t border-border-dark">
@@ -236,6 +251,7 @@ export default function Home() {
                 onEditTransaction={handleOpenEditModal} 
                 showValues={showValues}
                 setShowValues={setShowValues}
+                onRefresh={handleRefresh}
               />
             )}
             {activeTab === 'transactions' && (
@@ -256,13 +272,15 @@ function Dashboard({
   onNewTransaction, 
   onEditTransaction,
   showValues,
-  setShowValues
+  setShowValues,
+  onRefresh
 }: { 
   user: any, 
   onNewTransaction: () => void,
   onEditTransaction: (t: any) => void,
   showValues: boolean,
-  setShowValues: (v: boolean) => void
+  setShowValues: (v: boolean) => void,
+  onRefresh: () => void
 }) {
   return (
     <div className="space-y-8">
@@ -272,6 +290,13 @@ function Dashboard({
           <p className="text-[10px] uppercase tracking-[0.2em] opacity-40">Resumo financeiro consolidado</p>
         </div>
         <div className="flex items-center gap-3">
+          <button 
+            onClick={onRefresh}
+            className="p-2 rounded-full border border-border-dark text-zinc-400 hover:bg-zinc-800 transition-all"
+            title="Atualizar Página"
+          >
+            <RefreshCcw size={14} />
+          </button>
           <button 
             onClick={() => setShowValues(!showValues)}
             className="flex items-center gap-2 px-4 py-2 rounded-full border border-border-dark text-[10px] uppercase tracking-widest font-bold hover:bg-zinc-800 transition-all text-zinc-400"
@@ -294,25 +319,8 @@ function Dashboard({
 
       <UpcomingAlerts user={user} onEdit={onEditTransaction} showValues={showValues} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-card-bg p-6 rounded border border-border-dark shadow-xl">
-          <div className="flex items-center justify-between mb-6 border-b border-border-dark pb-4">
-            <h3 className="text-[11px] uppercase tracking-[0.2em] font-bold text-white">Fluxo de Caixa (6 Meses)</h3>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-[#a3e635]"></div>
-                <span className="text-[9px] uppercase tracking-wider text-zinc-500">Entradas</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-white"></div>
-                <span className="text-[9px] uppercase tracking-wider text-zinc-500">Saídas</span>
-              </div>
-            </div>
-          </div>
-          <CashFlowChart user={user} showValues={showValues} />
-        </div>
-
-        <div className="bg-card-bg p-6 rounded border border-border-dark shadow-xl overflow-hidden">
+      <div className="grid grid-cols-1 gap-8">
+        <div className="bg-card-bg p-6 rounded border border-border-dark shadow-xl">
           <div className="flex items-center justify-between mb-6 border-b border-border-dark pb-4">
             <h3 className="text-[11px] uppercase tracking-[0.2em] font-bold text-white">Últimas Transações</h3>
             <button className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-gold transition-colors">Ver todas</button>

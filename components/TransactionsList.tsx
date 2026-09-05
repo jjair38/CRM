@@ -189,8 +189,65 @@ export function TransactionsList({ user, compact = false, onEdit, showValues = t
           <p className="text-zinc-500 text-sm">Nenhum resultado encontrado para sua busca.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-[12px] border-collapse">
+        <>
+          {/* Card View for Mobile */}
+          <div className="grid grid-cols-1 gap-4 md:hidden">
+            {listToRender.map((t) => {
+              const Icon = CATEGORY_ICONS[t.category] || (t.type === 'Receita' ? Plus : Receipt);
+              const actualStatus = getTransactionStatus(t);
+              return (
+                <div 
+                  key={t.id} 
+                  onClick={() => onEdit?.(t)}
+                  className={`bg-[#111113] p-4 rounded-xl border border-border-dark shadow-lg active:scale-[0.98] transition-all ${deletingId === t.id ? 'opacity-30 pointer-events-none' : ''}`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${t.type === 'Receita' ? 'bg-[#a3e635]/10 text-[#a3e635]' : 'bg-[#fb7185]/10 text-[#fb7185]'}`}>
+                        <Icon size={18} />
+                      </div>
+                      <div>
+                        <h4 className="text-white font-medium text-sm">{t.description}</h4>
+                        <p className="text-[10px] uppercase tracking-wider text-zinc-500">{t.category}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className={`text-sm font-bold ${t.type === 'Receita' ? 'text-[#a3e635]' : 'text-white'} ${!showValues ? 'blur-sm' : ''}`}>
+                        {t.type === 'Receita' ? '+' : '-'} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(t.value)}
+                      </p>
+                      <p className="text-[10px] text-zinc-600 mt-0.5">{t.dueDate?.toDate ? format(t.dueDate.toDate(), "dd/MM/yyyy") : '---'}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between pt-3 border-t border-white/5">
+                    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] uppercase font-bold border ${
+                      actualStatus === 'Pago' ? 'bg-[#a3e635]/10 text-[#a3e635] border-[#a3e635]/20' : 
+                      actualStatus === 'Pendente' ? 'bg-[#fbbf24]/10 text-[#fbbf24] border-[#fbbf24]/20' : 
+                      'bg-[#fb7185]/10 text-[#fb7185] border-[#fb7185]/20'
+                    }`}>
+                      <div className={`w-1.5 h-1.5 rounded-full ${
+                        actualStatus === 'Pago' ? 'bg-[#a3e635]' : 
+                        actualStatus === 'Pendente' ? 'bg-[#fbbf24]' : 'bg-[#fb7185]'
+                      }`}></div>
+                      {actualStatus}
+                    </div>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(t.id);
+                      }}
+                      className="text-zinc-600 hover:text-red-400 p-2"
+                    >
+                      {deletingId === t.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Table View for Desktop */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left text-[12px] border-collapse">
             <thead>
               <tr className="border-b border-border-dark text-[10px] uppercase tracking-wider opacity-40">
                 <th className="px-4 py-3 font-normal">Descrição</th>
@@ -277,7 +334,8 @@ export function TransactionsList({ user, compact = false, onEdit, showValues = t
             </tbody>
           </table>
         </div>
-      )}
-    </div>
-  );
+      </>
+    )}
+  </div>
+);
 }
