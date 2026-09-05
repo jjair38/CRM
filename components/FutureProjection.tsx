@@ -44,43 +44,48 @@ export function FutureProjection({ user, showValues = true }: { user: any, showV
 
     const q = query(collection(db, 'transactions'), where('userId', '==', user.uid));
     
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const monthData: MonthProjection[] = months.map(m => ({
-        monthName: format(m.date, 'MMMM', { locale: ptBR }),
-        year: m.date.getFullYear(),
-        totalIn: 0,
-        totalOut: 0,
-        balance: 0,
-        monthDate: m.date
-      }));
+    const unsubscribe = onSnapshot(q, 
+      (snapshot) => {
+        const monthData: MonthProjection[] = months.map(m => ({
+          monthName: format(m.date, 'MMMM', { locale: ptBR }),
+          year: m.date.getFullYear(),
+          totalIn: 0,
+          totalOut: 0,
+          balance: 0,
+          monthDate: m.date
+        }));
 
-      snapshot.docs.forEach(doc => {
-        const data = doc.data();
-        const value = Number(data.value) || 0;
-        const trxDate = data.dueDate?.toDate ? data.dueDate.toDate() : null;
+        snapshot.docs.forEach(doc => {
+          const data = doc.data();
+          const value = Number(data.value) || 0;
+          const trxDate = data.dueDate?.toDate ? data.dueDate.toDate() : null;
 
-        if (trxDate) {
-          monthData.forEach(mProj => {
-            const mStart = startOfMonth(mProj.monthDate);
-            const mEnd = endOfMonth(mProj.monthDate);
-            
-            if (isWithinInterval(trxDate, { start: mStart, end: mEnd })) {
-              if (data.type === 'Receita') {
-                mProj.totalIn += value;
-              } else {
-                mProj.totalOut += value;
+          if (trxDate) {
+            monthData.forEach(mProj => {
+              const mStart = startOfMonth(mProj.monthDate);
+              const mEnd = endOfMonth(mProj.monthDate);
+              
+              if (isWithinInterval(trxDate, { start: mStart, end: mEnd })) {
+                if (data.type === 'Receita') {
+                  mProj.totalIn += value;
+                } else {
+                  mProj.totalOut += value;
+                }
               }
-            }
-          });
-        }
-      });
+            });
+          }
+        });
 
-      monthData.forEach(m => {
-        m.balance = m.totalIn - m.totalOut;
-      });
+        monthData.forEach(m => {
+          m.balance = m.totalIn - m.totalOut;
+        });
 
-      setProjections(monthData);
-    });
+        setProjections(monthData);
+      },
+      (error) => {
+        console.warn('Listener de projeção pausado (permissão):', error.message);
+      }
+    );
 
     return () => unsubscribe();
   }, [user?.uid]);

@@ -66,21 +66,27 @@ export function CSVImport({ user }: { user: any }) {
       where('userId', '==', user.uid)
     );
     
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const history = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      
-      // Sort client-side to avoid needing a composite index in Firestore
-      const sortedHistory = history.sort((a: any, b: any) => {
-        const timeA = a.timestamp?.seconds || 0;
-        const timeB = b.timestamp?.seconds || 0;
-        return timeB - timeA;
-      });
-      
-      setImportHistory(sortedHistory);
-    });
+    const unsubscribe = onSnapshot(q, 
+      (snapshot) => {
+        const history = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        
+        // Sort client-side to avoid needing a composite index in Firestore
+        const sortedHistory = history.sort((a: any, b: any) => {
+          const timeA = a.timestamp?.seconds || 0;
+          const timeB = b.timestamp?.seconds || 0;
+          return timeB - timeA;
+        });
+        
+        setImportHistory(sortedHistory);
+      },
+      (error) => {
+        console.warn('Listener de histórico pausado (permissão):', error.message);
+        // Silently handle - the component will retry on next user change or mount
+      }
+    );
 
     return () => unsubscribe();
   }, [user]);
