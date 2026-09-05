@@ -315,9 +315,9 @@ function Dashboard({
         </div>
       </header>
 
-      <SummaryCards user={user} showValues={showValues} />
-
       <UpcomingAlerts user={user} onEdit={onEditTransaction} showValues={showValues} />
+
+      <SummaryCards user={user} showValues={showValues} />
 
       <div className="grid grid-cols-1 gap-8">
         <div className="bg-card-bg p-6 rounded border border-border-dark shadow-xl">
