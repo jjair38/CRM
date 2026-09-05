@@ -63,8 +63,7 @@ export function CSVImport({ user }: { user: any }) {
     
     const q = query(
       collection(db, 'import_history'), 
-      where('userId', '==', user.uid),
-      orderBy('timestamp', 'desc')
+      where('userId', '==', user.uid)
     );
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -72,7 +71,15 @@ export function CSVImport({ user }: { user: any }) {
         id: doc.id,
         ...doc.data()
       }));
-      setImportHistory(history);
+      
+      // Sort client-side to avoid needing a composite index in Firestore
+      const sortedHistory = history.sort((a: any, b: any) => {
+        const timeA = a.timestamp?.seconds || 0;
+        const timeB = b.timestamp?.seconds || 0;
+        return timeB - timeA;
+      });
+      
+      setImportHistory(sortedHistory);
     });
 
     return () => unsubscribe();
@@ -239,14 +246,24 @@ export function CSVImport({ user }: { user: any }) {
     setLoading(true);
 
     try {
-      const batch = writeBatch(db);
+      // Firebase Batch has a limit of 500 operations. 
+      // We'll process in chunks of 400 to be safe and leave room for history.
+      const CHUNK_SIZE = 400;
+      const rows = summary.validRows;
       
-      summary.validRows.forEach(row => {
-        const newDocRef = doc(collection(db, 'transactions'));
-        batch.set(newDocRef, row);
-      });
+      for (let i = 0; i < rows.length; i += CHUNK_SIZE) {
+        const chunk = rows.slice(i, i + CHUNK_SIZE);
+        const batch = writeBatch(db);
+        
+        chunk.forEach(row => {
+          const newDocRef = doc(collection(db, 'transactions'));
+          batch.set(newDocRef, row);
+        });
+        
+        await batch.commit();
+      }
 
-      // Save to history
+      // Save to history (separate from batch to avoid complexity)
       const historyRef = collection(db, 'import_history');
       await addDoc(historyRef, {
         userId: user.uid,
@@ -258,13 +275,12 @@ export function CSVImport({ user }: { user: any }) {
         withErrors: summary.errors
       });
 
-      await batch.commit();
       alert(`Sucesso! ${summary.new} novos lançamentos importados.`);
       setSummary(null);
       setFile(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro na importação:', error);
-      alert('Erro ao processar a importação. Tente novamente.');
+      alert(`Erro ao processar a importação: ${error.message || 'Verifique sua conexão e os dados do arquivo.'}`);
     } finally {
       setLoading(false);
     }
