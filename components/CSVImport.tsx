@@ -267,17 +267,20 @@ export function CSVImport({ user }: { user: any }) {
       // Wrapped in try/catch to ensure main import success is reported even if history fails
       try {
         const historyRef = collection(db, 'import_history');
-        await addDoc(historyRef, {
+        const historyData = {
           userId: user.uid,
           timestamp: Timestamp.now(),
-          fileName: file?.name || 'arquivo.csv',
+          fileName: file?.name || 'arquivo_sem_nome.csv',
           totalAnalyzed: summary.total,
           newImported: summary.new,
           ignoredExisting: summary.existing,
           withErrors: summary.errors
-        });
-      } catch (historyError) {
-        console.warn('Sucesso na importação, mas erro ao gravar histórico:', historyError);
+        };
+        
+        await addDoc(historyRef, historyData);
+        console.log('Histórico gravado com sucesso');
+      } catch (historyError: any) {
+        console.error('Erro ao gravar histórico:', historyError);
       }
 
       alert(`Sucesso! ${summary.new} novos lançamentos importados.`);
@@ -445,16 +448,37 @@ export function CSVImport({ user }: { user: any }) {
                 <p className="text-[10px] text-zinc-600 uppercase tracking-widest">Nenhuma importação realizada ainda.</p>
               ) : (
                 importHistory.map((item) => (
-                  <div key={item.id} className="p-3 bg-zinc-900 rounded-xl border border-white/5 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] text-zinc-500">{item.timestamp?.toDate ? format(item.timestamp.toDate(), "dd/MM/yyyy HH:mm") : '---'}</span>
-                      <span className="text-[10px] text-gold font-bold">{item.newImported} novos</span>
+                  <div key={item.id} className="p-4 bg-zinc-900/50 rounded-2xl border border-white/5 space-y-3 hover:border-gold/20 transition-all">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="space-y-1 overflow-hidden">
+                        <p className="text-[11px] text-white font-bold truncate flex items-center gap-2">
+                          <FileText size={12} className="text-gold" />
+                          {item.fileName}
+                        </p>
+                        <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-medium">
+                          {item.timestamp?.toDate ? format(item.timestamp.toDate(), "dd/MM/yyyy • HH:mm'h'") : '---'}
+                        </p>
+                      </div>
+                      <div className="bg-gold/10 px-2 py-1 rounded text-[9px] text-gold font-bold uppercase shrink-0">
+                        +{item.newImported || 0} Itens
+                      </div>
                     </div>
-                    <p className="text-[11px] text-white font-medium truncate">{item.fileName}</p>
-                    <div className="flex gap-3 opacity-50 text-[9px] uppercase tracking-tighter">
-                      <span>Total: {item.totalAnalyzed}</span>
-                      <span>Ignorados: {item.ignoredExisting}</span>
-                      <span className="text-red-400">Erros: {item.withErrors}</span>
+                    
+                    <div className="flex items-center gap-4 pt-2 border-t border-white/5">
+                      <div className="space-y-0.5">
+                        <p className="text-[8px] uppercase text-zinc-600 font-bold">Total</p>
+                        <p className="text-[10px] text-zinc-400 font-serif">{item.totalAnalyzed || 0}</p>
+                      </div>
+                      <div className="space-y-0.5">
+                        <p className="text-[8px] uppercase text-zinc-600 font-bold">Ignorados</p>
+                        <p className="text-[10px] text-zinc-400 font-serif">{item.ignoredExisting || 0}</p>
+                      </div>
+                      {item.withErrors > 0 && (
+                        <div className="space-y-0.5 ml-auto">
+                          <p className="text-[8px] uppercase text-red-500 font-bold">Erros</p>
+                          <p className="text-[10px] text-red-400 font-serif">{item.withErrors}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))
