@@ -14,7 +14,45 @@ import {
   orderBy,
   onSnapshot
 } from 'firebase/firestore';
+import { auth } from '@/lib/firebase';
 import Papa from 'papaparse';
+
+enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId?: string | null;
+    email?: string | null;
+    emailVerified?: boolean | null;
+    isAnonymous?: boolean | null;
+  }
+}
+
+function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified,
+      isAnonymous: auth.currentUser?.isAnonymous,
+    },
+    operationType,
+    path
+  };
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
+}
 import { 
   Upload, 
   FileText, 
@@ -266,7 +304,11 @@ export function CSVImport({ user }: { user: any }) {
           batch.set(newDocRef, row);
         });
         
-        await batch.commit();
+        try {
+          await batch.commit();
+        } catch (error) {
+          handleFirestoreError(error, OperationType.WRITE, 'transactions');
+        }
       }
 
       // Save to history (separate from batch to avoid complexity)
@@ -287,6 +329,10 @@ export function CSVImport({ user }: { user: any }) {
         console.log('Histórico gravado com sucesso');
       } catch (historyError: any) {
         console.error('Erro ao gravar histórico:', historyError);
+        // Fallback alert for the user with detailed info
+        if (historyError.message?.includes('permissions')) {
+          handleFirestoreError(historyError, OperationType.CREATE, 'import_history');
+        }
       }
 
       alert(`Sucesso! ${summary.new} novos lançamentos importados.`);
