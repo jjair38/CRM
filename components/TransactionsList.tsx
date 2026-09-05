@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { MoreHorizontal, Plus, Receipt, Filter, ChevronRight, Pencil, Trash2, Search, Loader2 } from 'lucide-react';
 
-export function TransactionsList({ user, compact = false, onEdit }: { user: any, compact?: boolean, onEdit?: (transaction: any) => void }) {
+export function TransactionsList({ user, compact = false, onEdit, showValues = true }: { user: any, compact?: boolean, onEdit?: (transaction: any) => void, showValues?: boolean }) {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -140,7 +140,7 @@ export function TransactionsList({ user, compact = false, onEdit }: { user: any,
                       <span className="text-white font-medium">{t.description}</span>
                     </div>
                   </td>
-                  <td className={`px-4 py-4 text-right font-medium ${t.type === 'Receita' ? 'text-[#a3e635]' : 'text-white'}`}>
+                  <td className={`px-4 py-4 text-right font-medium transition-all duration-300 ${t.type === 'Receita' ? 'text-[#a3e635]' : 'text-white'} ${!showValues ? 'blur-sm select-none' : ''}`}>
                     {t.type === 'Receita' ? '+' : '-'} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(t.value)}
                   </td>
                   <td className="px-4 py-4 opacity-60">

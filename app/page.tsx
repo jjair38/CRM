@@ -15,7 +15,9 @@ import {
   AlertCircle,
   Menu,
   X,
-  Wallet
+  Wallet,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { db } from '@/lib/firebase';
@@ -41,6 +43,7 @@ import { TransactionsList } from '@/components/TransactionsList';
 import { SummaryCards } from '@/components/SummaryCards';
 import { TransactionModal } from '@/components/TransactionModal';
 import { UpcomingAlerts } from '@/components/UpcomingAlerts';
+import { GoogleSheetsSync } from '@/components/GoogleSheetsSync';
 
 export default function Home() {
   const { user, loading, signIn, logout } = useAuth();
@@ -66,6 +69,7 @@ export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<any>(null);
+  const [showValues, setShowValues] = useState(true);
 
   const handleOpenNewModal = () => {
     setEditingTransaction(null);
@@ -229,11 +233,13 @@ export default function Home() {
                 user={user} 
                 onNewTransaction={handleOpenNewModal} 
                 onEditTransaction={handleOpenEditModal} 
+                showValues={showValues}
+                setShowValues={setShowValues}
               />
             )}
             {activeTab === 'transactions' && (
               <div className="bg-card-bg p-6 rounded border border-border-dark shadow-xl">
-                <TransactionsList user={user} onEdit={handleOpenEditModal} />
+                <TransactionsList user={user} onEdit={handleOpenEditModal} showValues={showValues} />
               </div>
             )}
           </motion.div>
@@ -247,11 +253,15 @@ export default function Home() {
 function Dashboard({ 
   user, 
   onNewTransaction, 
-  onEditTransaction 
+  onEditTransaction,
+  showValues,
+  setShowValues
 }: { 
   user: any, 
   onNewTransaction: () => void,
-  onEditTransaction: (t: any) => void
+  onEditTransaction: (t: any) => void,
+  showValues: boolean,
+  setShowValues: (v: boolean) => void
 }) {
   return (
     <div className="space-y-8">
@@ -262,6 +272,14 @@ function Dashboard({
         </div>
         <div className="flex items-center gap-3">
           <button 
+            onClick={() => setShowValues(!showValues)}
+            className="flex items-center gap-2 px-4 py-2 rounded-full border border-border-dark text-[10px] uppercase tracking-widest font-bold hover:bg-zinc-800 transition-all text-zinc-400"
+            title={showValues ? "Ocultar Valores" : "Mostrar Valores"}
+          >
+            {showValues ? <EyeOff size={14} /> : <Eye size={14} />}
+            <span className="hidden sm:inline">{showValues ? "Ocultar Valores" : "Mostrar Valores"}</span>
+          </button>
+          <button 
             onClick={onNewTransaction}
             className="bg-gold hover:bg-white text-black px-6 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-gold/10 transition-all"
           >
@@ -271,9 +289,11 @@ function Dashboard({
         </div>
       </header>
 
-      <SummaryCards user={user} />
+      <SummaryCards user={user} showValues={showValues} />
 
-      <UpcomingAlerts user={user} onEdit={onEditTransaction} />
+      <GoogleSheetsSync user={user} />
+
+      <UpcomingAlerts user={user} onEdit={onEditTransaction} showValues={showValues} />
 
       <div className="grid grid-cols-1 gap-8">
         <div className="bg-card-bg p-6 rounded border border-border-dark shadow-xl">
@@ -281,7 +301,7 @@ function Dashboard({
             <h3 className="text-[11px] uppercase tracking-[0.2em] font-bold text-white">Últimas Transações</h3>
             <button className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-gold transition-colors">Ver todas</button>
           </div>
-          <TransactionsList user={user} compact onEdit={onEditTransaction} />
+          <TransactionsList user={user} compact onEdit={onEditTransaction} showValues={showValues} />
         </div>
       </div>
     </div>

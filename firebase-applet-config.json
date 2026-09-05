@@ -1,12 +1,11 @@
 {
-  "projectId": "gen-lang-client-0681293134",
-  "appId": "1:15335194180:web:ebc76e43eca816c9c30611",
-  "apiKey": "AIzaSyAXBgMvLJwY7NjW82XxfsGpSsmvNwtdLK4",
-  "authDomain": "gen-lang-client-0681293134.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-controlefinancei-e9a5d49e-f898-475f-a5c2-5fc1fd40b72f",
-  "storageBucket": "gen-lang-client-0681293134.firebasestorage.app",
-  "messagingSenderId": "15335194180",
+  "projectId": "gen-lang-client-0534058385",
+  "appId": "1:429443407501:web:85505dab7e457fa1ad4cc4",
+  "apiKey": "AIzaSyALjAsItP95vHUQZbufWFj2Ap6KHOavqmg",
+  "authDomain": "gen-lang-client-0534058385.firebaseapp.com",
+  "storageBucket": "gen-lang-client-0534058385.firebasestorage.app",
+  "messagingSenderId": "429443407501",
   "measurementId": "",
-  "oAuthClientId": "15335194180-jpn4hgj6uu471hqbm1qopnunuos3kqvs.apps.googleusercontent.com",
+  "oAuthClientId": "429443407501-qnad36lp2scgjsc0m427mk47ji1nib65.apps.googleusercontent.com",
   "recaptchaSiteKey": ""
 }

@@ -8,7 +8,7 @@ import { ptBR } from 'date-fns/locale';
 import { AlertCircle, Calendar, ChevronRight, Receipt } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-export function UpcomingAlerts({ user, onEdit }: { user: any, onEdit?: (transaction: any) => void }) {
+export function UpcomingAlerts({ user, onEdit, showValues = true }: { user: any, onEdit?: (transaction: any) => void, showValues?: boolean }) {
   const [alerts, setAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -85,7 +85,7 @@ export function UpcomingAlerts({ user, onEdit }: { user: any, onEdit?: (transact
                     <p className={`text-[10px] font-bold uppercase tracking-widest ${isOverdue ? 'text-[#fb7185]' : 'text-[#fbbf24]'}`}>
                       {isOverdue ? 'Atrasado' : daysLeft === 0 ? 'Vence Hoje' : `Em ${daysLeft} ${daysLeft === 1 ? 'dia' : 'dias'}`}
                     </p>
-                    <p className="text-[14px] font-bold text-white mt-1">
+                    <p className={`text-[14px] font-bold text-white mt-1 transition-all duration-300 ${!showValues ? 'blur-sm select-none' : ''}`}>
                       {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(t.value)}
                     </p>
                   </div>

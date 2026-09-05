@@ -6,7 +6,7 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { TrendingUp, TrendingDown, Wallet, AlertCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 
-export function SummaryCards({ user }: { user: any }) {
+export function SummaryCards({ user, showValues = true }: { user: any, showValues?: boolean }) {
   const [summary, setSummary] = useState({
     totalIn: 0,
     totalOut: 0,
@@ -104,7 +104,7 @@ export function SummaryCards({ user }: { user: any }) {
               </div>
             </div>
             <div className="flex flex-col">
-              <span className={`text-2xl font-light ${card.color}`}>
+              <span className={`text-2xl font-light transition-all duration-300 ${card.color} ${!showValues ? 'blur-md select-none' : ''}`}>
                 {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(card.value)}
               </span>
             </div>
