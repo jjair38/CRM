@@ -208,7 +208,14 @@ export function TransactionsList({ user, compact = false, onEdit, showValues = t
                       </div>
                       <div>
                         <h4 className="text-white font-medium text-sm">{t.description}</h4>
-                        <p className="text-[10px] uppercase tracking-wider text-zinc-500">{t.category}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-[10px] uppercase tracking-wider text-zinc-500">{t.category}</p>
+                          {t.installmentsTotal > 1 && (
+                            <span className="text-[9px] text-gold/60 font-bold">
+                              • {t.installmentCurrent}/{t.installmentsTotal} ({t.installmentsTotal - t.installmentCurrent} faltam)
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="text-right">
@@ -273,7 +280,14 @@ export function TransactionsList({ user, compact = false, onEdit, showValues = t
                         <div className={`w-8 h-8 rounded flex items-center justify-center ${t.type === 'Receita' ? 'bg-[#a3e635]/10 text-[#a3e635]' : 'bg-[#fb7185]/10 text-[#fb7185]'}`}>
                           <Icon size={14} />
                         </div>
-                        <span className="text-white font-medium">{t.description}</span>
+                        <div className="flex flex-col">
+                          <span className="text-white font-medium">{t.description}</span>
+                          {t.installmentsTotal > 1 && (
+                            <span className="text-[9px] text-gold/40 font-bold uppercase tracking-tighter">
+                              Parcela {t.installmentCurrent} de {t.installmentsTotal} • {t.installmentsTotal - t.installmentCurrent} restantes
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className={`px-4 py-4 text-right font-medium transition-all duration-300 ${t.type === 'Receita' ? 'text-[#a3e635]' : 'text-white'} ${!showValues ? 'blur-sm select-none' : ''}`}>

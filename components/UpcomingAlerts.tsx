@@ -105,7 +105,14 @@ export function UpcomingAlerts({ user, onEdit, showValues = true }: { user: any,
 
                 <div className="flex items-end justify-between gap-2">
                   <div className="flex-1">
-                    <h4 className="text-xs font-medium text-white line-clamp-1 group-hover:text-gold transition-colors">{t.description}</h4>
+                    <h4 className="text-xs font-medium text-white line-clamp-1 group-hover:text-gold transition-colors">
+                      {t.description}
+                      {t.installmentsTotal > 1 && (
+                        <span className="ml-2 text-[9px] text-zinc-500 font-bold uppercase">
+                          ({t.installmentCurrent}/{t.installmentsTotal})
+                        </span>
+                      )}
+                    </h4>
                     <div className="flex items-center gap-2 mt-2 opacity-50">
                       <Calendar size={12} />
                       <span className="text-[10px]">{format(t.dueDate.toDate(), "dd 'de' MMM", { locale: ptBR })}</span>

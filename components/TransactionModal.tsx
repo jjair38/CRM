@@ -23,7 +23,9 @@ export function TransactionModal({ isOpen, onClose, user, initialData }: Transac
     dueDate: '',
     category: 'Geral',
     status: 'Pendente',
-    paymentMethod: 'PIX'
+    paymentMethod: 'PIX',
+    installmentsTotal: '1',
+    installmentCurrent: '1'
   });
 
   useEffect(() => {
@@ -38,7 +40,9 @@ export function TransactionModal({ isOpen, onClose, user, initialData }: Transac
         dueDate: initialData.dueDate?.toDate ? initialData.dueDate.toDate().toISOString().split('T')[0] : today,
         category: initialData.category || 'Geral',
         status: initialData.status || 'Pendente',
-        paymentMethod: initialData.paymentMethod || 'PIX'
+        paymentMethod: initialData.paymentMethod || 'PIX',
+        installmentsTotal: initialData.installmentsTotal?.toString() || '1',
+        installmentCurrent: initialData.installmentCurrent?.toString() || '1'
       });
     } else {
       setFormData({
@@ -48,7 +52,9 @@ export function TransactionModal({ isOpen, onClose, user, initialData }: Transac
         dueDate: today,
         category: 'Geral',
         status: 'Pendente',
-        paymentMethod: 'PIX'
+        paymentMethod: 'PIX',
+        installmentsTotal: '1',
+        installmentCurrent: '1'
       });
     }
   }, [initialData, isOpen]);
@@ -87,6 +93,8 @@ export function TransactionModal({ isOpen, onClose, user, initialData }: Transac
         dueDate: Timestamp.fromDate(dateObj),
         category: formData.category,
         status: formData.status,
+        installmentsTotal: Number(formData.installmentsTotal) || 1,
+        installmentCurrent: Number(formData.installmentCurrent) || 1,
         userId: user.uid,
         updatedAt: Timestamp.now()
       };
@@ -119,7 +127,9 @@ export function TransactionModal({ isOpen, onClose, user, initialData }: Transac
         dueDate: formatInputDate(new Date()),
         category: 'Geral',
         status: 'Pendente',
-        paymentMethod: 'PIX'
+        paymentMethod: 'PIX',
+        installmentsTotal: '1',
+        installmentCurrent: '1'
       });
       onClose();
     } catch (error: any) {
@@ -207,8 +217,30 @@ export function TransactionModal({ isOpen, onClose, user, initialData }: Transac
                   >
                     <option value="Pendente">Pendente</option>
                     <option value="Pago">Pago/Recebido</option>
-                    <option value="Cancelado">Cancelado</option>
                   </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-[10px] uppercase tracking-[0.2em] font-bold text-zinc-500 mb-2">Parcela Atual</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={formData.installmentCurrent}
+                    onChange={e => setFormData({ ...formData, installmentCurrent: e.target.value })}
+                    className="w-full bg-[#1a1a1c] border border-[#2a2a2e] rounded px-4 py-3 focus:outline-none focus:border-gold transition-all text-white text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] uppercase tracking-[0.2em] font-bold text-zinc-500 mb-2">Total de Parcelas</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={formData.installmentsTotal}
+                    onChange={e => setFormData({ ...formData, installmentsTotal: e.target.value })}
+                    className="w-full bg-[#1a1a1c] border border-[#2a2a2e] rounded px-4 py-3 focus:outline-none focus:border-gold transition-all text-white text-sm"
+                  />
                 </div>
               </div>
 
@@ -221,9 +253,7 @@ export function TransactionModal({ isOpen, onClose, user, initialData }: Transac
                 >
                   <option value="Geral">Geral</option>
                   <option value="Aluguel">Aluguel</option>
-                  <option value="Marketing">Marketing</option>
                   <option value="Pessoal">Pessoal</option>
-                  <option value="Impostos">Impostos</option>
                   <option value="Vendas">Vendas</option>
                   <option value="Utilidades">Utilidades (Luz, Água)</option>
                 </select>
