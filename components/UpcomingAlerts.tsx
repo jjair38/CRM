@@ -2,15 +2,27 @@
 
 import React, { useEffect, useState } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, orderBy, doc, updateDoc } from 'firebase/firestore';
 import { format, differenceInDays, isAfter, isBefore, addDays, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { AlertCircle, Calendar, ChevronRight, Receipt } from 'lucide-react';
+import { AlertCircle, Calendar, ChevronRight, Receipt, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export function UpcomingAlerts({ user, onEdit, showValues = true }: { user: any, onEdit?: (transaction: any) => void, showValues?: boolean }) {
   const [alerts, setAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const handleMarkAsPaid = async (e: React.MouseEvent, transactionId: string) => {
+    e.stopPropagation();
+    try {
+      await updateDoc(doc(db, 'transactions', transactionId), {
+        status: 'Pago',
+        paymentDate: new Date()
+      });
+    } catch (error) {
+      console.error('Erro ao marcar como pago:', error);
+    }
+  };
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -91,12 +103,22 @@ export function UpcomingAlerts({ user, onEdit, showValues = true }: { user: any,
                   </div>
                 </div>
 
-                <div>
-                  <h4 className="text-xs font-medium text-white line-clamp-1 group-hover:text-gold transition-colors">{t.description}</h4>
-                  <div className="flex items-center gap-2 mt-2 opacity-50">
-                    <Calendar size={12} />
-                    <span className="text-[10px]">{format(t.dueDate.toDate(), "dd 'de' MMM", { locale: ptBR })}</span>
+                <div className="flex items-end justify-between gap-2">
+                  <div className="flex-1">
+                    <h4 className="text-xs font-medium text-white line-clamp-1 group-hover:text-gold transition-colors">{t.description}</h4>
+                    <div className="flex items-center gap-2 mt-2 opacity-50">
+                      <Calendar size={12} />
+                      <span className="text-[10px]">{format(t.dueDate.toDate(), "dd 'de' MMM", { locale: ptBR })}</span>
+                    </div>
                   </div>
+                  
+                  <button
+                    onClick={(e) => handleMarkAsPaid(e, t.id)}
+                    className="p-2 rounded-full bg-white/5 hover:bg-[#a3e635]/20 text-zinc-500 hover:text-[#a3e635] transition-all group/btn"
+                    title="Marcar como Pago"
+                  >
+                    <CheckCircle2 size={20} className="group-hover/btn:scale-110 transition-transform" />
+                  </button>
                 </div>
 
                 {/* Accent line */}
