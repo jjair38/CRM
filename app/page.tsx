@@ -43,6 +43,7 @@ import { TransactionsList } from '@/components/TransactionsList';
 import { SummaryCards } from '@/components/SummaryCards';
 import { TransactionModal } from '@/components/TransactionModal';
 import { UpcomingAlerts } from '@/components/UpcomingAlerts';
+import { CashFlowChart } from '@/components/CashFlowChart';
 import { PWAInstallButton } from '@/components/PWAInstallButton';
 
 export default function Home() {
@@ -198,8 +199,6 @@ export default function Home() {
               </button>
             );
           })}
-          
-          <PWAInstallButton />
         </nav>
 
         <div className="p-4 border-t border-border-dark">
@@ -295,8 +294,25 @@ function Dashboard({
 
       <UpcomingAlerts user={user} onEdit={onEditTransaction} showValues={showValues} />
 
-      <div className="grid grid-cols-1 gap-8">
-        <div className="bg-card-bg p-6 rounded border border-border-dark shadow-xl">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 bg-card-bg p-6 rounded border border-border-dark shadow-xl">
+          <div className="flex items-center justify-between mb-6 border-b border-border-dark pb-4">
+            <h3 className="text-[11px] uppercase tracking-[0.2em] font-bold text-white">Fluxo de Caixa (6 Meses)</h3>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-[#a3e635]"></div>
+                <span className="text-[9px] uppercase tracking-wider text-zinc-500">Entradas</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-white"></div>
+                <span className="text-[9px] uppercase tracking-wider text-zinc-500">Saídas</span>
+              </div>
+            </div>
+          </div>
+          <CashFlowChart user={user} showValues={showValues} />
+        </div>
+
+        <div className="bg-card-bg p-6 rounded border border-border-dark shadow-xl overflow-hidden">
           <div className="flex items-center justify-between mb-6 border-b border-border-dark pb-4">
             <h3 className="text-[11px] uppercase tracking-[0.2em] font-bold text-white">Últimas Transações</h3>
             <button className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-gold transition-colors">Ver todas</button>
