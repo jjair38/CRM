@@ -47,6 +47,7 @@ import { TransactionModal } from '@/components/TransactionModal';
 import { UpcomingAlerts } from '@/components/UpcomingAlerts';
 import { PWAInstallButton } from '@/components/PWAInstallButton';
 import { CSVImport } from '@/components/CSVImport';
+import { FutureProjection } from '@/components/FutureProjection';
 
 export default function Home() {
   const { user, loading, signIn, logout } = useAuth();
@@ -355,6 +356,8 @@ function Dashboard({
       <UpcomingAlerts user={user} onEdit={onEditTransaction} showValues={showValues} />
 
       <SummaryCards user={user} showValues={showValues} />
+
+      <FutureProjection user={user} showValues={showValues} />
 
       <div className="grid grid-cols-1 gap-8">
         <div className="bg-card-bg p-6 rounded border border-border-dark shadow-xl">

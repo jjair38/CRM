@@ -264,16 +264,21 @@ export function CSVImport({ user }: { user: any }) {
       }
 
       // Save to history (separate from batch to avoid complexity)
-      const historyRef = collection(db, 'import_history');
-      await addDoc(historyRef, {
-        userId: user.uid,
-        timestamp: Timestamp.now(),
-        fileName: file?.name || 'arquivo.csv',
-        totalAnalyzed: summary.total,
-        newImported: summary.new,
-        ignoredExisting: summary.existing,
-        withErrors: summary.errors
-      });
+      // Wrapped in try/catch to ensure main import success is reported even if history fails
+      try {
+        const historyRef = collection(db, 'import_history');
+        await addDoc(historyRef, {
+          userId: user.uid,
+          timestamp: Timestamp.now(),
+          fileName: file?.name || 'arquivo.csv',
+          totalAnalyzed: summary.total,
+          newImported: summary.new,
+          ignoredExisting: summary.existing,
+          withErrors: summary.errors
+        });
+      } catch (historyError) {
+        console.warn('Sucesso na importação, mas erro ao gravar histórico:', historyError);
+      }
 
       alert(`Sucesso! ${summary.new} novos lançamentos importados.`);
       setSummary(null);
