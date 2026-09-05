@@ -281,6 +281,7 @@ export default function Home() {
                 showValues={showValues}
                 setShowValues={setShowValues}
                 onRefresh={handleRefresh}
+                onSeeAll={() => setActiveTab('transactions')}
               />
             )}
             {activeTab === 'transactions' && (
@@ -307,14 +308,16 @@ function Dashboard({
   onEditTransaction,
   showValues,
   setShowValues,
-  onRefresh
+  onRefresh,
+  onSeeAll
 }: { 
   user: any, 
   onNewTransaction: () => void,
   onEditTransaction: (t: any) => void,
   showValues: boolean,
   setShowValues: (v: boolean) => void,
-  onRefresh: () => void
+  onRefresh: () => void,
+  onSeeAll: () => void
 }) {
   return (
     <div className="space-y-8">
@@ -357,7 +360,12 @@ function Dashboard({
         <div className="bg-card-bg p-6 rounded border border-border-dark shadow-xl">
           <div className="flex items-center justify-between mb-6 border-b border-border-dark pb-4">
             <h3 className="text-[11px] uppercase tracking-[0.2em] font-bold text-white">Últimas Transações</h3>
-            <button className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-gold transition-colors">Ver todas</button>
+            <button 
+              onClick={onSeeAll}
+              className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-gold transition-colors"
+            >
+              Ver todas
+            </button>
           </div>
           <TransactionsList user={user} compact onEdit={onEditTransaction} showValues={showValues} />
         </div>
