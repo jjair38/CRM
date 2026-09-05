@@ -18,7 +18,8 @@ import {
   Wallet,
   Eye,
   EyeOff,
-  RefreshCcw
+  RefreshCcw,
+  FileUp
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { db } from '@/lib/firebase';
@@ -45,6 +46,7 @@ import { SummaryCards } from '@/components/SummaryCards';
 import { TransactionModal } from '@/components/TransactionModal';
 import { UpcomingAlerts } from '@/components/UpcomingAlerts';
 import { PWAInstallButton } from '@/components/PWAInstallButton';
+import { CSVImport } from '@/components/CSVImport';
 
 export default function Home() {
   const { user, loading, signIn, logout } = useAuth();
@@ -66,7 +68,7 @@ export default function Home() {
     testConnection();
   }, [user]);
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'transactions'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'transactions' | 'import'>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<any>(null);
@@ -141,6 +143,7 @@ export default function Home() {
   const menuItems = [
     { id: 'dashboard', label: 'Painel', icon: LayoutDashboard },
     { id: 'transactions', label: 'Lançamentos', icon: Receipt },
+    { id: 'import', label: 'Importar CSV', icon: FileUp },
   ];
 
   return (
@@ -152,32 +155,58 @@ export default function Home() {
         initialData={editingTransaction}
       />
       {/* Mobile Header */}
-      <div className="md:hidden bg-card-bg border-b border-border-dark p-4 flex items-center justify-between sticky top-0 z-50">
+      <div className="md:hidden bg-card-bg border-b border-border-dark p-4 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center gap-2 font-light tracking-widest uppercase text-white font-serif">
           <div className="w-8 h-8 bg-gold rounded flex items-center justify-center">
             <Wallet className="text-black w-5 h-5" />
           </div>
           <span>CRM <span className="text-gold font-bold">Financeiro</span></span>
         </div>
-        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 text-zinc-600">
-          {sidebarOpen ? <X /> : <Menu />}
+        <button onClick={() => setSidebarOpen(true)} className="flex items-center gap-2">
+          <img src={user.photoURL || ''} alt={user.displayName || ''} className="w-8 h-8 rounded-full border border-gold/30" />
         </button>
       </div>
 
-      {/* Floating Action Button for Mobile */}
+      {/* Bottom Navigation for Mobile */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0c0c0d] border-t border-border-dark z-40 px-6 pb-6 pt-3 flex items-center justify-between">
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = activeTab === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id as any)}
+              className={`flex flex-col items-center gap-1.5 transition-all ${isActive ? 'text-gold' : 'text-zinc-500'}`}
+            >
+              <div className={`p-2 rounded-xl transition-all ${isActive ? 'bg-gold/10' : ''}`}>
+                <Icon size={20} />
+              </div>
+              <span className={`text-[9px] uppercase tracking-wider font-bold ${isActive ? 'opacity-100' : 'opacity-60'}`}>
+                {item.label.split(' ')[0]}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Floating Action Button for Mobile - Moved higher to not block bottom nav if needed, but actually fixed bottom right is fine if padded */}
       <button 
         onClick={handleOpenNewModal}
-        className="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-gold text-black rounded-full shadow-2xl flex items-center justify-center z-50 hover:scale-110 active:scale-95 transition-all"
+        className="md:hidden fixed bottom-24 right-6 w-14 h-14 bg-gold text-black rounded-full shadow-2xl flex items-center justify-center z-40 hover:scale-110 active:scale-95 transition-all"
         title="Novo Lançamento"
       >
         <Plus size={28} />
       </button>
 
-      {/* Sidebar */}
+      {/* Sidebar (Drawer on mobile) */}
       <aside className={`
-        fixed inset-0 z-40 md:relative md:flex md:w-64 flex-col bg-card-bg border-r border-border-dark transition-transform duration-300
+        fixed inset-0 z-50 md:relative md:flex md:w-64 flex-col bg-card-bg border-r border-border-dark transition-transform duration-300
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
+        <div className="flex items-center justify-between p-6 md:hidden border-b border-border-dark">
+          <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-white">Configurações</span>
+          <button onClick={() => setSidebarOpen(false)} className="text-zinc-500"><X size={20} /></button>
+        </div>
         <div className="p-6 hidden md:flex flex-col mb-8 border-b border-border-dark">
           <div className="flex items-center gap-3 mb-1">
             <div className="w-10 h-10 bg-gold rounded flex items-center justify-center">
@@ -235,7 +264,7 @@ export default function Home() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-4 md:p-8 max-w-6xl mx-auto w-full">
+      <main className="flex-1 p-4 md:p-8 max-w-6xl mx-auto w-full pb-32 md:pb-8">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -257,6 +286,11 @@ export default function Home() {
             {activeTab === 'transactions' && (
               <div className="bg-card-bg p-6 rounded border border-border-dark shadow-xl">
                 <TransactionsList user={user} onEdit={handleOpenEditModal} showValues={showValues} />
+              </div>
+            )}
+            {activeTab === 'import' && (
+              <div className="bg-card-bg p-8 rounded border border-border-dark shadow-xl">
+                <CSVImport user={user} />
               </div>
             )}
           </motion.div>
