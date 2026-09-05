@@ -1,6 +1,6 @@
 {
-  "name": "CRM Finanças",
-  "description": "Um CRM inteligente para gestão de contas a pagar e receber com assistente IA.",
+  "name": "Financeiro",
+  "description": "Sistema de gestão de contas a pagar e receber.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

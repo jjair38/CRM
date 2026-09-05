@@ -29,7 +29,8 @@ import {
   Timestamp,
   doc,
   updateDoc,
-  deleteDoc
+  deleteDoc,
+  getDocFromServer
 } from 'firebase/firestore';
 import { format, isAfter, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -39,10 +40,29 @@ import { FinanceBot } from '@/components/FinanceBot';
 import { TransactionsList } from '@/components/TransactionsList';
 import { SummaryCards } from '@/components/SummaryCards';
 import { TransactionModal } from '@/components/TransactionModal';
+import { UpcomingAlerts } from '@/components/UpcomingAlerts';
 
 export default function Home() {
   const { user, loading, signIn, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'transactions' | 'chat'>('dashboard');
+  
+  // Teste de conexão obrigatório com a nuvem
+  useEffect(() => {
+    async function testConnection() {
+      if (!user) return;
+      try {
+        // Tenta buscar um documento fictício diretamente do servidor
+        await getDocFromServer(doc(db, '_connection_test', 'status'));
+        console.log('✅ Conectado com sucesso ao banco de dados na nuvem.');
+      } catch (error: any) {
+        if (error?.message?.includes('offline')) {
+          alert('ATENÇÃO: Você está offline ou o banco de dados não está acessível. As informações podem não ser salvas na internet.');
+        }
+      }
+    }
+    testConnection();
+  }, [user]);
+
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'transactions'>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<any>(null);
@@ -81,9 +101,9 @@ export default function Home() {
           <div className="w-16 h-16 bg-zinc-900 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <Wallet className="text-white w-8 h-8" />
           </div>
-          <h1 className="text-3xl font-bold text-zinc-900 mb-2">CRM Finanças</h1>
+          <h1 className="text-3xl font-bold text-zinc-900 mb-2">Financeiro</h1>
           <p className="text-zinc-500 mb-8">
-            Gerencie suas contas, contatos e fluxo de caixa com a ajuda de inteligência artificial.
+            Gerencie suas contas, contatos e fluxo de caixa de forma simples e eficiente.
           </p>
           <button 
             onClick={signIn}
@@ -100,7 +120,6 @@ export default function Home() {
   const menuItems = [
     { id: 'dashboard', label: 'Painel', icon: LayoutDashboard },
     { id: 'transactions', label: 'Lançamentos', icon: Receipt },
-    { id: 'chat', label: 'CRM Finanças', icon: MessageSquare },
   ];
 
   return (
@@ -117,7 +136,7 @@ export default function Home() {
           <div className="w-8 h-8 bg-gold rounded flex items-center justify-center">
             <Wallet className="text-black w-5 h-5" />
           </div>
-          <span>CRM <span className="text-gold font-bold">Finanças</span></span>
+          <span>Sistema <span className="text-gold font-bold">Financeiro</span></span>
         </div>
         <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 text-zinc-600">
           {sidebarOpen ? <X /> : <Menu />}
@@ -135,7 +154,7 @@ export default function Home() {
               <Wallet className="text-black w-6 h-6" />
             </div>
             <span className="font-serif font-light tracking-widest uppercase text-xl text-white">
-              CRM <span className="text-gold font-bold">Finanças</span>
+              Sistema <span className="text-gold font-bold">Financeiro</span>
             </span>
           </div>
           <p className="text-[9px] uppercase tracking-[0.2em] opacity-40 ml-13">Desenvolvido por Jair</p>
@@ -205,7 +224,6 @@ export default function Home() {
                 <TransactionsList user={user} onEdit={handleOpenEditModal} />
               </div>
             )}
-            {activeTab === 'chat' && <FinanceBot user={user} />}
           </motion.div>
         </AnimatePresence>
       </main>
@@ -242,6 +260,8 @@ function Dashboard({
       </header>
 
       <SummaryCards user={user} />
+
+      <UpcomingAlerts user={user} onEdit={onEditTransaction} />
 
       <div className="grid grid-cols-1 gap-8">
         <div className="bg-card-bg p-6 rounded border border-border-dark shadow-xl">

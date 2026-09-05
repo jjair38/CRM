@@ -3,11 +3,11 @@ import './globals.css';
 import { AuthProvider } from '@/hooks/use-auth';
 
 export const metadata: Metadata = {
-  title: 'CRM Finanças',
-  description: 'Um CRM inteligente para gestão de contas a pagar e receber com assistente IA.',
+  title: 'Financeiro',
+  description: 'Sistema de gestão de contas a pagar e receber.',
   openGraph: {
-    title: 'CRM Finanças',
-    description: 'Um CRM inteligente para gestão de contas a pagar e receber com assistente IA.',
+    title: 'Financeiro',
+    description: 'Sistema de gestão de contas a pagar e receber.',
     type: 'website',
   },
 };

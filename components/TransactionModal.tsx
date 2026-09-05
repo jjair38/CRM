@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, Timestamp, doc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, Timestamp, doc, updateDoc, waitForPendingWrites } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '@/lib/firestore-errors';
-import { X, Loader2 } from 'lucide-react';
+import { X, Loader2, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface TransactionModalProps {
@@ -98,6 +98,15 @@ export function TransactionModal({ isOpen, onClose, user, initialData }: Transac
           ...payload,
           createdAt: Timestamp.now()
         });
+      }
+
+      // NOVO: Força a espera pela sincronização real com os servidores do Google
+      // Isso garante que o dado NÃO fique apenas no seu computador.
+      try {
+        await waitForPendingWrites(db);
+        console.log('✅ Sincronização com a nuvem confirmada.');
+      } catch (syncError) {
+        console.warn('Sincronização pendente, mas o comando foi enviado.', syncError);
       }
 
       // Success: Clear form and close
