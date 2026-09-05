@@ -238,7 +238,7 @@ export function FutureProjection({ user, showValues = true }: { user: any, showV
                   <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark">Parcela</th>
                   <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark">Status</th>
                   <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark text-right">Valor</th>
-                  <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark text-center">Ação</th>
+                  <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark text-center">Pago</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -283,7 +283,7 @@ export function FutureProjection({ user, showValues = true }: { user: any, showV
                         {trx.status === 'Pendente' && (
                           <button
                             onClick={() => handleMarkAsPaid(trx.id)}
-                            className="p-1.5 rounded-full bg-gold/10 text-gold hover:bg-gold hover:text-black transition-all group/btn"
+                            className="p-1.5 rounded-full bg-[#a3e635]/10 text-[#a3e635] hover:bg-[#a3e635] hover:text-black transition-all group/btn"
                             title="Confirmar como Pago"
                           >
                             <Check size={14} />
