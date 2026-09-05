@@ -43,6 +43,7 @@ import { TransactionsList } from '@/components/TransactionsList';
 import { SummaryCards } from '@/components/SummaryCards';
 import { TransactionModal } from '@/components/TransactionModal';
 import { UpcomingAlerts } from '@/components/UpcomingAlerts';
+import { PWAInstallButton } from '@/components/PWAInstallButton';
 
 export default function Home() {
   const { user, loading, signIn, logout } = useAuth();
@@ -197,6 +198,8 @@ export default function Home() {
               </button>
             );
           })}
+          
+          <PWAInstallButton />
         </nav>
 
         <div className="p-4 border-t border-border-dark">

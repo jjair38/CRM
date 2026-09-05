@@ -27,6 +27,8 @@ export function TransactionModal({ isOpen, onClose, user, initialData }: Transac
   });
 
   useEffect(() => {
+    if (!isOpen) return;
+    
     const today = new Date().toISOString().split('T')[0];
     if (initialData) {
       setFormData({

@@ -16,8 +16,8 @@ export function TransactionsList({ user, compact = false, onEdit, showValues = t
 
   useEffect(() => {
     if (!user?.uid) {
-      setLoading(false);
-      return;
+      const timer = setTimeout(() => setLoading(false), 0);
+      return () => clearTimeout(timer);
     }
 
     const path = 'transactions';
