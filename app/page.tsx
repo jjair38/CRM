@@ -356,23 +356,7 @@ function Dashboard({
       <UpcomingAlerts user={user} onEdit={onEditTransaction} showValues={showValues} />
 
       <SummaryCards user={user} showValues={showValues} />
-
       <FutureProjection user={user} showValues={showValues} />
-
-      <div className="grid grid-cols-1 gap-8">
-        <div className="bg-card-bg p-6 rounded border border-border-dark shadow-xl">
-          <div className="flex items-center justify-between mb-6 border-b border-border-dark pb-4">
-            <h3 className="text-[11px] uppercase tracking-[0.2em] font-bold text-white">Últimas Transações</h3>
-            <button 
-              onClick={onSeeAll}
-              className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-gold transition-colors"
-            >
-              Ver todas
-            </button>
-          </div>
-          <TransactionsList user={user} compact onEdit={onEditTransaction} showValues={showValues} />
-        </div>
-      </div>
     </div>
   );
 }

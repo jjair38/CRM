@@ -14,6 +14,8 @@ import {
   isAfter
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { updateDoc, doc as firestoreDoc } from 'firebase/firestore';
+import { Check } from 'lucide-react';
 
 interface MonthProjection {
   monthName: string;
@@ -98,6 +100,16 @@ export function FutureProjection({ user, showValues = true }: { user: any, showV
 
     return () => unsubscribe();
   }, [user?.uid]);
+
+  const handleMarkAsPaid = async (id: string) => {
+    try {
+      const trxRef = firestoreDoc(db, 'transactions', id);
+      await updateDoc(trxRef, { status: 'Pago' });
+    } catch (error) {
+      console.error('Erro ao atualizar status:', error);
+      alert('Erro ao confirmar pagamento.');
+    }
+  };
 
   if (projections.length === 0) return null;
 
@@ -226,12 +238,13 @@ export function FutureProjection({ user, showValues = true }: { user: any, showV
                   <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark">Parcela</th>
                   <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark">Status</th>
                   <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark text-right">Valor</th>
+                  <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark text-center">Ação</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
                 {selectedMonthTransactions.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-zinc-600 text-xs uppercase tracking-widest font-medium italic">
+                    <td colSpan={7} className="px-6 py-12 text-center text-zinc-600 text-xs uppercase tracking-widest font-medium italic">
                       Nenhum lançamento previsto para este mês.
                     </td>
                   </tr>
@@ -265,6 +278,17 @@ export function FutureProjection({ user, showValues = true }: { user: any, showV
                         trx.type === 'Receita' ? 'text-[#a3e635]' : 'text-[#fb7185]'
                       } ${!showValues ? 'blur-[4px]' : ''}`}>
                         {trx.type === 'Receita' ? '+' : '-'} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(trx.value)}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {trx.status === 'Pendente' && (
+                          <button
+                            onClick={() => handleMarkAsPaid(trx.id)}
+                            className="p-1.5 rounded-full bg-gold/10 text-gold hover:bg-gold hover:text-black transition-all group/btn"
+                            title="Confirmar como Pago"
+                          >
+                            <Check size={14} />
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))
