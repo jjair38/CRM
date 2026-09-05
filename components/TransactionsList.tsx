@@ -6,13 +6,67 @@ import { collection, query, where, onSnapshot, orderBy, addDoc, Timestamp, delet
 import { handleFirestoreError, OperationType } from '@/lib/firestore-errors';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { MoreHorizontal, Plus, Receipt, Filter, ChevronRight, Pencil, Trash2, Search, Loader2 } from 'lucide-react';
+import { 
+  MoreHorizontal, 
+  Plus, 
+  Receipt, 
+  Filter, 
+  ChevronRight, 
+  Pencil, 
+  Trash2, 
+  Search, 
+  Loader2,
+  Home,
+  ShoppingBag,
+  Car,
+  Utensils,
+  Smartphone,
+  CreditCard,
+  Briefcase,
+  Heart,
+  Lightbulb,
+  GraduationCap,
+  Banknote
+} from 'lucide-react';
+
+const CATEGORY_ICONS: Record<string, any> = {
+  'Aluguel': Home,
+  'Moradia': Home,
+  'Mercado': ShoppingBag,
+  'Compras': ShoppingBag,
+  'Transporte': Car,
+  'Combustível': Car,
+  'Alimentação': Utensils,
+  'Restaurante': Utensils,
+  'Educação': GraduationCap,
+  'Lazer': Heart,
+  'Saúde': Heart,
+  'Serviços': Smartphone,
+  'Contas': Lightbulb,
+  'Energia': Lightbulb,
+  'Água': Lightbulb,
+  'Salário': Banknote,
+  'Renda': Banknote,
+  'Trabalho': Briefcase,
+  'Cartão de Crédito': CreditCard,
+  'Outros': Receipt
+};
 
 export function TransactionsList({ user, compact = false, onEdit, showValues = true }: { user: any, compact?: boolean, onEdit?: (transaction: any) => void, showValues?: boolean }) {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'Todos' | 'Pago' | 'Pendente' | 'Atrasado'>('Todos');
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const getTransactionStatus = (t: any) => {
+    if (t.status === 'Pago' || t.status === 'Recebido') return 'Pago';
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDate = t.dueDate?.toDate ? t.dueDate.toDate() : new Date(t.dueDate);
+    if (dueDate < today) return 'Atrasado';
+    return 'Pendente';
+  };
 
   useEffect(() => {
     if (!user?.uid) {
@@ -74,10 +128,15 @@ export function TransactionsList({ user, compact = false, onEdit, showValues = t
     }
   };
 
-  const filteredTransactions = transactions.filter(t => 
-    t.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    t.category.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredTransactions = transactions.filter(t => {
+    const matchesSearch = t.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      t.category.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const actualStatus = getTransactionStatus(t);
+    const matchesStatus = statusFilter === 'Todos' || actualStatus === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
 
   if (loading) {
     return (
@@ -96,15 +155,31 @@ export function TransactionsList({ user, compact = false, onEdit, showValues = t
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <h2 className="text-[11px] uppercase tracking-[0.2em] font-bold text-white">Histórico de Lançamentos</h2>
           
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" size={14} />
-            <input 
-              type="text"
-              placeholder="Pesquisar descrição ou categoria..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-[#1a1a1c] border border-[#2a2a2e] rounded-full pl-10 pr-4 py-2 text-[12px] focus:outline-none focus:border-gold transition-all text-white placeholder:text-zinc-700"
-            />
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 bg-[#1a1a1c] border border-[#2a2a2e] rounded-full px-3 py-1">
+              <Filter size={12} className="text-zinc-500" />
+              <select 
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as any)}
+                className="bg-transparent text-[11px] uppercase tracking-wider text-zinc-400 focus:outline-none cursor-pointer"
+              >
+                <option value="Todos" className="bg-[#1a1a1c]">Todos Status</option>
+                <option value="Pago" className="bg-[#1a1a1c]">Pagos</option>
+                <option value="Pendente" className="bg-[#1a1a1c]">Pendentes</option>
+                <option value="Atrasado" className="bg-[#1a1a1c]">Atrasados</option>
+              </select>
+            </div>
+
+            <div className="relative flex-1 min-w-[240px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" size={14} />
+              <input 
+                type="text"
+                placeholder="Pesquisar descrição ou categoria..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-[#1a1a1c] border border-[#2a2a2e] rounded-full pl-10 pr-4 py-2 text-[12px] focus:outline-none focus:border-gold transition-all text-white placeholder:text-zinc-700"
+              />
+            </div>
           </div>
         </div>
       )}
@@ -127,65 +202,78 @@ export function TransactionsList({ user, compact = false, onEdit, showValues = t
               </tr>
             </thead>
             <tbody>
-              {listToRender.map((t) => (
-                <tr 
-                  key={t.id} 
-                  className={`border-b border-border-dark hover:bg-[#161618] transition-colors group ${deletingId === t.id ? 'opacity-30 pointer-events-none' : ''}`}
-                >
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded flex items-center justify-center ${t.type === 'Receita' ? 'bg-[#a3e635]/10 text-[#a3e635]' : 'bg-[#fb7185]/10 text-[#fb7185]'}`}>
-                        {t.type === 'Receita' ? <Plus size={14} /> : <Receipt size={14} />}
+              {listToRender.map((t) => {
+                const Icon = CATEGORY_ICONS[t.category] || (t.type === 'Receita' ? Plus : Receipt);
+                const actualStatus = getTransactionStatus(t);
+                
+                return (
+                  <tr 
+                    key={t.id} 
+                    className={`border-b border-border-dark hover:bg-[#161618] transition-colors group ${deletingId === t.id ? 'opacity-30 pointer-events-none' : ''}`}
+                  >
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded flex items-center justify-center ${t.type === 'Receita' ? 'bg-[#a3e635]/10 text-[#a3e635]' : 'bg-[#fb7185]/10 text-[#fb7185]'}`}>
+                          <Icon size={14} />
+                        </div>
+                        <span className="text-white font-medium">{t.description}</span>
                       </div>
-                      <span className="text-white font-medium">{t.description}</span>
-                    </div>
-                  </td>
-                  <td className={`px-4 py-4 text-right font-medium transition-all duration-300 ${t.type === 'Receita' ? 'text-[#a3e635]' : 'text-white'} ${!showValues ? 'blur-sm select-none' : ''}`}>
-                    {t.type === 'Receita' ? '+' : '-'} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(t.value)}
-                  </td>
-                  <td className="px-4 py-4 opacity-60">
-                    {t.dueDate?.toDate ? format(t.dueDate.toDate(), "dd/MM/yyyy") : '---'}
-                  </td>
-                  {!compact && (
-                    <td className="px-4 py-4 italic opacity-60">
-                      {t.category}
                     </td>
-                  )}
-                  <td className="px-4 py-4">
-                    <span className={`px-2 py-0.5 text-[9px] uppercase font-bold rounded-sm ${
-                      t.status === 'Pago' || t.status === 'Recebido' ? 'bg-[#a3e635] text-black' : 
-                      t.status === 'Pendente' ? 'bg-[#fbbf24] text-black' : 'bg-[#fb7185] text-black'
-                    }`}>
-                      {t.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2 transition-opacity">
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onEdit?.(t);
-                        }}
-                        className="p-2.5 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all"
-                        title="Editar"
-                      >
-                        <Pencil size={16} />
-                      </button>
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(t.id);
-                        }}
-                        disabled={deletingId === t.id}
-                        className={`p-2.5 rounded-lg transition-all ${deletingId === t.id ? 'text-zinc-700' : 'text-zinc-500 hover:text-red-400 hover:bg-red-400/10'}`}
-                        title="Excluir"
-                      >
-                        {deletingId === t.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    <td className={`px-4 py-4 text-right font-medium transition-all duration-300 ${t.type === 'Receita' ? 'text-[#a3e635]' : 'text-white'} ${!showValues ? 'blur-sm select-none' : ''}`}>
+                      {t.type === 'Receita' ? '+' : '-'} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(t.value)}
+                    </td>
+                    <td className="px-4 py-4 opacity-60">
+                      {t.dueDate?.toDate ? format(t.dueDate.toDate(), "dd/MM/yyyy") : '---'}
+                    </td>
+                    {!compact && (
+                      <td className="px-4 py-4 opacity-60">
+                        <div className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-600"></span>
+                          {t.category}
+                        </div>
+                      </td>
+                    )}
+                    <td className="px-4 py-4">
+                      <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] uppercase font-bold border ${
+                        actualStatus === 'Pago' ? 'bg-[#a3e635]/10 text-[#a3e635] border-[#a3e635]/20' : 
+                        actualStatus === 'Pendente' ? 'bg-[#fbbf24]/10 text-[#fbbf24] border-[#fbbf24]/20' : 
+                        'bg-[#fb7185]/10 text-[#fb7185] border-[#fb7185]/20'
+                      }`}>
+                        <div className={`w-1 h-1 rounded-full ${
+                          actualStatus === 'Pago' ? 'bg-[#a3e635]' : 
+                          actualStatus === 'Pendente' ? 'bg-[#fbbf24]' : 'bg-[#fb7185]'
+                        }`}></div>
+                        {actualStatus}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2 transition-opacity">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit?.(t);
+                          }}
+                          className="p-2.5 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all"
+                          title="Editar"
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(t.id);
+                          }}
+                          disabled={deletingId === t.id}
+                          className={`p-2.5 rounded-lg transition-all ${deletingId === t.id ? 'text-zinc-700' : 'text-zinc-500 hover:text-red-400 hover:bg-red-400/10'}`}
+                          title="Excluir"
+                        >
+                          {deletingId === t.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
