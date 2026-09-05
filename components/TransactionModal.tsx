@@ -67,20 +67,7 @@ export function TransactionModal({ isOpen, onClose, user, initialData }: Transac
       return;
     }
 
-    // Fechamento e limpeza IMEDIATA para experiência instantânea
-    const closeModalInstantly = () => {
-      setFormData({
-        description: '',
-        value: '',
-        type: 'Despesa',
-        dueDate: formatInputDate(new Date()),
-        category: 'Geral',
-        status: 'Pendente',
-        paymentMethod: 'PIX'
-      });
-      onClose();
-    };
-
+    setLoading(true);
     const path = 'transactions';
     try {
       // Robust date parsing for YYYY-MM-DD
@@ -103,21 +90,29 @@ export function TransactionModal({ isOpen, onClose, user, initialData }: Transac
       };
 
       if (initialData?.id) {
-        // Update existing transaction - No await for instant feel
-        updateDoc(doc(db, path, initialData.id), payload)
-          .catch(error => handleFirestoreError(error, OperationType.UPDATE, `${path}/${initialData.id}`));
+        // Update existing transaction
+        await updateDoc(doc(db, path, initialData.id), payload);
       } else {
-        // Create new transaction - No await for instant feel
-        addDoc(collection(db, path), {
+        // Create new transaction
+        await addDoc(collection(db, path), {
           ...payload,
           createdAt: Timestamp.now()
-        }).catch(error => handleFirestoreError(error, OperationType.CREATE, path));
+        });
       }
 
-      closeModalInstantly();
+      // Success: Clear form and close
+      setFormData({
+        description: '',
+        value: '',
+        type: 'Despesa',
+        dueDate: formatInputDate(new Date()),
+        category: 'Geral',
+        status: 'Pendente',
+        paymentMethod: 'PIX'
+      });
+      onClose();
     } catch (error: any) {
-      console.error('Error in handleSubmit:', error);
-      alert('Erro ao preparar o lançamento. Verifique os dados.');
+      handleFirestoreError(error, initialData?.id ? OperationType.UPDATE : OperationType.CREATE, path);
     } finally {
       setLoading(false);
     }

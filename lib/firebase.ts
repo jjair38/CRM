@@ -12,7 +12,9 @@ const firebaseConfig = {
 };
 
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-const db = getFirestore(app);
+
+// Usando o ID do banco de dados oficial para garantir que os dados subam para a nuvem
+const db = getFirestore(app, "ai-studio-controlefinancei-e9a5d49e-f898-475f-a5c2-5fc1fd40b72f");
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
