@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --color-gold: #d4af37;
+  --color-dark-bg: #080809;
+  --color-card-bg: #111113;
+  --color-border-dark: #1a1a1c;
+  --font-serif: Georgia, serif;
+}
+
+body {
+  background-color: var(--color-dark-bg);
+  color: #d1d1d1;
+}

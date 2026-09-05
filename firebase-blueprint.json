@@ -1,0 +1,40 @@
+{
+  "collections": {
+    "contacts": {
+      "description": "Store entities like clients, suppliers, and service providers",
+      "fields": {
+        "userId": "string",
+        "name": "string",
+        "type": "string",
+        "defaultCategory": "string",
+        "contactInfo": "string",
+        "createdAt": "timestamp"
+      }
+    },
+    "transactions": {
+      "description": "Store all financial entries (payables and receivables)",
+      "fields": {
+        "userId": "string",
+        "description": "string",
+        "type": "string",
+        "value": "number",
+        "dueDate": "timestamp",
+        "status": "string",
+        "category": "string",
+        "paymentMethod": "string",
+        "contactId": "string",
+        "createdAt": "timestamp"
+      }
+    },
+    "bankAccounts": {
+      "description": "Store bank accounts and their balances",
+      "fields": {
+        "userId": "string",
+        "bankName": "string",
+        "currentBalance": "number",
+        "accountType": "string",
+        "createdAt": "timestamp"
+      }
+    }
+  }
+}

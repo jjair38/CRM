@@ -1,0 +1,173 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { db } from '@/lib/firebase';
+import { collection, query, where, onSnapshot, orderBy, addDoc, Timestamp, deleteDoc, doc } from 'firebase/firestore';
+import { handleFirestoreError, OperationType } from '@/lib/firestore-errors';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { MoreHorizontal, Plus, Receipt, Filter, ChevronRight, Pencil, Trash2 } from 'lucide-react';
+
+export function TransactionsList({ user, compact = false, onEdit }: { user: any, compact?: boolean, onEdit?: (transaction: any) => void }) {
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user?.uid) {
+      setLoading(false);
+      return;
+    }
+
+    const path = 'transactions';
+    const q = query(
+      collection(db, path),
+      where('userId', '==', user.uid)
+    );
+    
+    const unsubscribe = onSnapshot(q, 
+      (snapshot) => {
+        const list = snapshot.docs.map(doc => ({ 
+          id: doc.id, 
+          ...doc.data(),
+          // Pre-parse dates to avoid repeated .toDate() calls during sorting
+          _date: (doc.data() as any).dueDate?.toDate?.() || new Date(0)
+        }));
+        
+        // Sort in memory
+        list.sort((a: any, b: any) => b._date.getTime() - a._date.getTime());
+        
+        setTransactions(list);
+        setLoading(false);
+      },
+      (error) => {
+        handleFirestoreError(error, OperationType.LIST, path);
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [user?.uid]);
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Tem certeza que deseja excluir este lançamento?')) {
+      const path = `transactions/${id}`;
+      try {
+        await deleteDoc(doc(db, 'transactions', id));
+      } catch (error) {
+        handleFirestoreError(error, OperationType.DELETE, path);
+      }
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="py-8 flex flex-col items-center justify-center space-y-3">
+        <div className="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+        <p className="text-[10px] uppercase tracking-widest opacity-40">Sincronizando lançamentos...</p>
+      </div>
+    );
+  }
+
+  if (transactions.length === 0) {
+    return (
+      <div className="py-12 text-center">
+        <div className="w-12 h-12 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Receipt className="text-zinc-400" />
+        </div>
+        <p className="text-zinc-500">Nenhuma transação encontrada.</p>
+      </div>
+    );
+  }
+
+  const listToRender = compact ? transactions.slice(0, 5) : transactions;
+
+  return (
+    <div className="space-y-4">
+      {!compact && (
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-[11px] uppercase tracking-[0.2em] font-bold text-white">Histórico de Lançamentos</h2>
+          <div className="flex gap-2">
+            <button className="p-2 border border-border-dark rounded hover:bg-zinc-800 text-zinc-500 transition-all">
+              <Filter size={14} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-[12px] border-collapse">
+          <thead>
+            <tr className="border-b border-border-dark text-[10px] uppercase tracking-wider opacity-40">
+              <th className="px-4 py-3 font-normal">Descrição</th>
+              <th className="px-4 py-3 font-normal text-right">Valor</th>
+              <th className="px-4 py-3 font-normal">Vencimento</th>
+              {!compact && <th className="px-4 py-3 font-normal">Categoria</th>}
+              <th className="px-4 py-3 font-normal">Status</th>
+              <th className="px-4 py-3 font-normal text-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {listToRender.map((t) => (
+              <tr 
+                key={t.id} 
+                className="border-b border-border-dark hover:bg-[#161618] transition-colors group"
+              >
+                <td className="px-4 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded flex items-center justify-center ${t.type === 'Receita' ? 'bg-[#a3e635]/10 text-[#a3e635]' : 'bg-[#fb7185]/10 text-[#fb7185]'}`}>
+                      {t.type === 'Receita' ? <Plus size={14} /> : <Receipt size={14} />}
+                    </div>
+                    <span className="text-white font-medium">{t.description}</span>
+                  </div>
+                </td>
+                <td className={`px-4 py-4 text-right font-medium ${t.type === 'Receita' ? 'text-[#a3e635]' : 'text-white'}`}>
+                  {t.type === 'Receita' ? '+' : '-'} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(t.value)}
+                </td>
+                <td className="px-4 py-4 opacity-60">
+                  {t.dueDate?.toDate ? format(t.dueDate.toDate(), "dd/MM/yyyy") : '---'}
+                </td>
+                {!compact && (
+                  <td className="px-4 py-4 italic opacity-60">
+                    {t.category}
+                  </td>
+                )}
+                <td className="px-4 py-4">
+                  <span className={`px-2 py-0.5 text-[9px] uppercase font-bold rounded-sm ${
+                    t.status === 'Pago' || t.status === 'Recebido' ? 'bg-[#a3e635] text-black' : 
+                    t.status === 'Pendente' ? 'bg-[#fbbf24] text-black' : 'bg-[#fb7185] text-black'
+                  }`}>
+                    {t.status}
+                  </span>
+                </td>
+                <td className="px-4 py-4 text-right">
+                  <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit?.(t);
+                      }}
+                      className="p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded transition-all"
+                      title="Editar"
+                    >
+                      <Pencil size={14} />
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(t.id);
+                      }}
+                      className="p-1.5 text-zinc-500 hover:text-red-400 hover:bg-red-400/10 rounded transition-all"
+                      title="Excluir"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
