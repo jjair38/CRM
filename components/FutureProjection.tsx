@@ -26,6 +26,8 @@ interface MonthProjection {
 
 export function FutureProjection({ user, showValues = true }: { user: any, showValues?: boolean }) {
   const [projections, setProjections] = useState<MonthProjection[]>([]);
+  const [allTransactions, setAllTransactions] = useState<any[]>([]);
+  const [selectedMonth, setSelectedMonth] = useState<MonthProjection | null>(null);
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -46,6 +48,9 @@ export function FutureProjection({ user, showValues = true }: { user: any, showV
     
     const unsubscribe = onSnapshot(q, 
       (snapshot) => {
+        const trxs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setAllTransactions(trxs);
+
         const monthData: MonthProjection[] = months.map(m => ({
           monthName: format(m.date, 'MMMM', { locale: ptBR }),
           year: m.date.getFullYear(),
@@ -55,8 +60,7 @@ export function FutureProjection({ user, showValues = true }: { user: any, showV
           monthDate: m.date
         }));
 
-        snapshot.docs.forEach(doc => {
-          const data = doc.data();
+        trxs.forEach((data: any) => {
           const value = Number(data.value) || 0;
           const trxDate = data.dueDate?.toDate ? data.dueDate.toDate() : null;
 
@@ -81,6 +85,11 @@ export function FutureProjection({ user, showValues = true }: { user: any, showV
         });
 
         setProjections(monthData);
+        
+        // Default select current month if none selected
+        if (!selectedMonth) {
+          setSelectedMonth(monthData[0]);
+        }
       },
       (error) => {
         console.warn('Listener de projeção pausado (permissão):', error.message);
@@ -92,65 +101,205 @@ export function FutureProjection({ user, showValues = true }: { user: any, showV
 
   if (projections.length === 0) return null;
 
+  const selectedMonthTransactions = allTransactions.filter(t => {
+    if (!selectedMonth) return false;
+    const trxDate = t.dueDate?.toDate ? t.dueDate.toDate() : null;
+    if (!trxDate) return false;
+    return isWithinInterval(trxDate, { 
+      start: startOfMonth(selectedMonth.monthDate), 
+      end: endOfMonth(selectedMonth.monthDate) 
+    });
+  }).sort((a, b) => {
+    const dateA = a.dueDate?.toDate ? a.dueDate.toDate().getTime() : 0;
+    const dateB = b.dueDate?.toDate ? b.dueDate.toDate().getTime() : 0;
+    return dateA - dateB;
+  });
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-2">
-          <Calendar size={16} className="text-gold" />
-          <h3 className="text-[11px] uppercase tracking-[0.2em] font-bold text-white">Projeção Próximos Meses</h3>
+    <div className="space-y-6">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between px-1">
+          <div className="flex items-center gap-2">
+            <Calendar size={16} className="text-gold" />
+            <h3 className="text-[11px] uppercase tracking-[0.2em] font-bold text-white">Projeção Próximos Meses</h3>
+          </div>
+          <p className="text-[9px] uppercase tracking-widest text-zinc-500">Clique em um mês para detalhar</p>
         </div>
-        <p className="text-[9px] uppercase tracking-widest text-zinc-500">Fluxo de Caixa Mensal</p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {projections.map((proj, index) => (
+            <motion.div
+              key={`${proj.monthName}-${proj.year}`}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+              onClick={() => setSelectedMonth(proj)}
+              className={`p-5 rounded-2xl border cursor-pointer transition-all group ${
+                selectedMonth?.monthName === proj.monthName && selectedMonth?.year === proj.year
+                ? 'bg-gold/10 border-gold/50'
+                : 'bg-[#111113] border-white/5 hover:border-gold/30'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <span className={`text-[10px] uppercase tracking-widest font-bold transition-colors ${
+                  selectedMonth?.monthName === proj.monthName && selectedMonth?.year === proj.year
+                  ? 'text-gold'
+                  : 'text-zinc-500 group-hover:text-gold'
+                }`}>
+                  {proj.monthName} <span className="opacity-30">{proj.year}</span>
+                </span>
+                <div className={`p-1 rounded transition-colors ${
+                  selectedMonth?.monthName === proj.monthName && selectedMonth?.year === proj.year
+                  ? 'bg-gold text-black'
+                  : 'bg-zinc-900 text-zinc-600 group-hover:bg-gold/10 group-hover:text-gold'
+                }`}>
+                  <ArrowRight size={10} />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp size={12} className="text-[#a3e635] opacity-50" />
+                    <span className="text-[9px] uppercase text-zinc-500">Entradas</span>
+                  </div>
+                  <span className={`text-xs font-medium text-white ${!showValues ? 'blur-[4px]' : ''}`}>
+                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proj.totalIn)}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <TrendingDown size={12} className="text-[#fb7185] opacity-50" />
+                    <span className="text-[9px] uppercase text-zinc-500">Saídas</span>
+                  </div>
+                  <span className={`text-xs font-medium text-white ${!showValues ? 'blur-[4px]' : ''}`}>
+                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proj.totalOut)}
+                  </span>
+                </div>
+
+                <div className="pt-3 border-t border-white/5 flex items-center justify-between">
+                  <span className="text-[9px] uppercase font-bold text-zinc-400">Saldo</span>
+                  <span className={`text-sm font-serif ${proj.balance >= 0 ? 'text-gold' : 'text-[#fb7185]'} ${!showValues ? 'blur-[4px]' : ''}`}>
+                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proj.balance)}
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {projections.map((proj, index) => (
-          <motion.div
-            key={`${proj.monthName}-${proj.year}`}
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className="bg-[#111113] p-5 rounded-2xl border border-white/5 hover:border-gold/30 transition-all group"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[10px] uppercase tracking-widest font-bold text-zinc-500 group-hover:text-gold transition-colors">
-                {proj.monthName} <span className="opacity-30">{proj.year}</span>
-              </span>
-              <div className="p-1 rounded bg-zinc-900 group-hover:bg-gold/10 transition-colors">
-                <ArrowRight size={10} className="text-zinc-600 group-hover:text-gold" />
+      {/* DETAILED VIEW SECTION */}
+      {selectedMonth && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          key={selectedMonth.monthName}
+          className="bg-card-bg rounded-2xl border border-border-dark overflow-hidden shadow-2xl"
+        >
+          <div className="p-6 border-b border-border-dark flex items-center justify-between bg-zinc-900/30">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center border border-gold/20">
+                <Calendar size={18} className="text-gold" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-white uppercase tracking-wider">Detalhamento Mensal</h4>
+                <p className="text-[10px] text-zinc-500 uppercase tracking-widest">{selectedMonth.monthName} {selectedMonth.year}</p>
               </div>
             </div>
+            <div className="text-right">
+              <p className="text-[9px] uppercase text-zinc-500 font-bold mb-1 tracking-tighter">Saldo Líquido Previsto</p>
+              <p className={`text-xl font-serif ${selectedMonth.balance >= 0 ? 'text-gold' : 'text-[#fb7185]'} ${!showValues ? 'blur-[8px]' : ''}`}>
+                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(selectedMonth.balance)}
+              </p>
+            </div>
+          </div>
 
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <TrendingUp size={12} className="text-[#a3e635] opacity-50" />
-                  <span className="text-[9px] uppercase text-zinc-500">Entradas</span>
-                </div>
-                <span className={`text-xs font-medium text-white ${!showValues ? 'blur-[4px]' : ''}`}>
-                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proj.totalIn)}
-                </span>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-zinc-900/50">
+                  <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark">Data</th>
+                  <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark">Descrição</th>
+                  <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark">Categoria</th>
+                  <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark">Parcela</th>
+                  <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark">Status</th>
+                  <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark text-right">Valor</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {selectedMonthTransactions.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-12 text-center text-zinc-600 text-xs uppercase tracking-widest font-medium italic">
+                      Nenhum lançamento previsto para este mês.
+                    </td>
+                  </tr>
+                ) : (
+                  selectedMonthTransactions.map((trx) => (
+                    <tr key={trx.id} className="hover:bg-white/[0.02] transition-colors group">
+                      <td className="px-6 py-4 text-[11px] text-zinc-400 font-medium">
+                        {trx.dueDate?.toDate ? format(trx.dueDate.toDate(), 'dd/MM/yyyy') : '---'}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-[11px] text-white font-medium group-hover:text-gold transition-colors">{trx.description}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 border border-white/5 uppercase font-bold tracking-tighter">
+                          {trx.category}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-[10px] text-zinc-500 font-bold">
+                        {trx.installmentCurrent && trx.installmentsTotal 
+                          ? `${trx.installmentCurrent}/${trx.installmentsTotal}`
+                          : '--'}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded ${
+                          trx.status === 'Pago' ? 'bg-[#a3e635]/10 text-[#a3e635]' : 'bg-gold/10 text-gold'
+                        }`}>
+                          {trx.status}
+                        </span>
+                      </td>
+                      <td className={`px-6 py-4 text-right text-xs font-serif ${
+                        trx.type === 'Receita' ? 'text-[#a3e635]' : 'text-[#fb7185]'
+                      } ${!showValues ? 'blur-[4px]' : ''}`}>
+                        {trx.type === 'Receita' ? '+' : '-'} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(trx.value)}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          
+          <div className="p-6 bg-zinc-900/20 border-t border-border-dark flex flex-wrap gap-8">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-[#a3e635]/10 border border-[#a3e635]/20">
+                <TrendingUp size={14} className="text-[#a3e635]" />
               </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <TrendingDown size={12} className="text-[#fb7185] opacity-50" />
-                  <span className="text-[9px] uppercase text-zinc-500">Saídas</span>
-                </div>
-                <span className={`text-xs font-medium text-white ${!showValues ? 'blur-[4px]' : ''}`}>
-                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proj.totalOut)}
-                </span>
-              </div>
-
-              <div className="pt-3 border-t border-white/5 flex items-center justify-between">
-                <span className="text-[9px] uppercase font-bold text-zinc-400">Saldo</span>
-                <span className={`text-sm font-serif ${proj.balance >= 0 ? 'text-gold' : 'text-[#fb7185]'} ${!showValues ? 'blur-[4px]' : ''}`}>
-                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proj.balance)}
-                </span>
+              <div>
+                <p className="text-[9px] uppercase text-zinc-500 font-bold">Total Receitas</p>
+                <p className={`text-sm text-white font-serif ${!showValues ? 'blur-[4px]' : ''}`}>
+                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(selectedMonth.totalIn)}
+                </p>
               </div>
             </div>
-          </motion.div>
-        ))}
-      </div>
+            
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-[#fb7185]/10 border border-[#fb7185]/20">
+                <TrendingDown size={14} className="text-[#fb7185]" />
+              </div>
+              <div>
+                <p className="text-[9px] uppercase text-zinc-500 font-bold">Total Despesas</p>
+                <p className={`text-sm text-white font-serif ${!showValues ? 'blur-[4px]' : ''}`}>
+                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(selectedMonth.totalOut)}
+                </p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 }

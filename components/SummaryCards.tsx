@@ -3,8 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
-import { TrendingUp, TrendingDown, Wallet, AlertCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, AlertCircle, Calendar } from 'lucide-react';
 import { motion } from 'motion/react';
+import { format, isWithinInterval, startOfMonth, endOfMonth } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 export function SummaryCards({ user, showValues = true }: { user: any, showValues?: boolean }) {
   const [summary, setSummary] = useState({
@@ -14,8 +16,15 @@ export function SummaryCards({ user, showValues = true }: { user: any, showValue
     pendingOut: 0
   });
 
+  const currentMonthName = format(new Date(), 'MMMM', { locale: ptBR });
+  const currentYear = new Date().getFullYear();
+
   useEffect(() => {
     if (!user?.uid) return;
+
+    const today = new Date();
+    const mStart = startOfMonth(today);
+    const mEnd = endOfMonth(today);
 
     const q = query(collection(db, 'transactions'), where('userId', '==', user.uid));
     
@@ -28,13 +37,16 @@ export function SummaryCards({ user, showValues = true }: { user: any, showValue
         snapshot.docs.forEach(doc => {
           const data = doc.data();
           const value = Number(data.value) || 0;
+          const trxDate = data.dueDate?.toDate ? data.dueDate.toDate() : null;
           
-          if (data.type === 'Receita') {
-            totalIn += value;
-          } else {
-            totalOut += value;
-            if (data.status === 'Pendente') {
-              pendingOut += value;
+          if (trxDate && isWithinInterval(trxDate, { start: mStart, end: mEnd })) {
+            if (data.type === 'Receita') {
+              totalIn += value;
+            } else {
+              totalOut += value;
+              if (data.status === 'Pendente') {
+                pendingOut += value;
+              }
             }
           }
         });
@@ -91,6 +103,14 @@ export function SummaryCards({ user, showValues = true }: { user: any, showValue
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between px-1">
+        <div className="flex items-center gap-2">
+          <Calendar size={16} className="text-gold" />
+          <h3 className="text-[11px] uppercase tracking-[0.2em] font-bold text-white">Resumo • Mês Vigente</h3>
+        </div>
+        <p className="text-[10px] uppercase tracking-widest text-gold font-bold">{currentMonthName} {currentYear}</p>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map((card, index) => {
           const Icon = card.icon;

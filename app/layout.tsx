@@ -33,7 +33,16 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
     <html lang="pt-BR">
       <body suppressHydrationWarning>
         <AuthProvider>
-          {children}
+          <div className="min-h-screen flex flex-col">
+            <main className="flex-grow">
+              {children}
+            </main>
+            <footer className="py-8 border-t border-white/5 text-center">
+              <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-zinc-600">
+                Desenvolvido por <span className="text-gold/50">Jair</span> — 2026
+              </p>
+            </footer>
+          </div>
         </AuthProvider>
       </body>
     </html>
