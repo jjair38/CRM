@@ -43,7 +43,6 @@ import { TransactionsList } from '@/components/TransactionsList';
 import { SummaryCards } from '@/components/SummaryCards';
 import { TransactionModal } from '@/components/TransactionModal';
 import { UpcomingAlerts } from '@/components/UpcomingAlerts';
-import { GoogleSheetsSync } from '@/components/GoogleSheetsSync';
 
 export default function Home() {
   const { user, loading, signIn, logout } = useAuth();
@@ -290,8 +289,6 @@ function Dashboard({
       </header>
 
       <SummaryCards user={user} showValues={showValues} />
-
-      <GoogleSheetsSync user={user} />
 
       <UpcomingAlerts user={user} onEdit={onEditTransaction} showValues={showValues} />
 
