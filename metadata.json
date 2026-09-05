@@ -1,5 +1,5 @@
 {
-  "name": "Financeiro",
+  "name": "CRM Financeiro",
   "description": "Sistema de gestão de contas a pagar e receber.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

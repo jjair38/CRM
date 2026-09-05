@@ -3,10 +3,10 @@ import './globals.css';
 import { AuthProvider } from '@/hooks/use-auth';
 
 export const metadata: Metadata = {
-  title: 'Financeiro',
+  title: 'CRM Financeiro',
   description: 'Sistema de gestão de contas a pagar e receber.',
   openGraph: {
-    title: 'Financeiro',
+    title: 'CRM Financeiro',
     description: 'Sistema de gestão de contas a pagar e receber.',
     type: 'website',
   },

@@ -92,26 +92,38 @@ export default function Home() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-[#080809] p-4 relative overflow-hidden">
+        {/* Background Gradients for "Arrojado" look */}
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-gold/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-gold/5 rounded-full blur-[120px]" />
+        
         <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center border border-zinc-200"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="max-w-md w-full bg-[#111113] rounded-3xl shadow-2xl p-10 text-center border border-white/5 relative z-10"
         >
-          <div className="w-16 h-16 bg-zinc-900 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <Wallet className="text-white w-8 h-8" />
+          <div className="w-20 h-20 bg-gradient-to-br from-gold/20 to-gold/5 rounded-2xl flex items-center justify-center mx-auto mb-8 border border-gold/20">
+            <Wallet className="text-gold w-10 h-10" />
           </div>
-          <h1 className="text-3xl font-bold text-zinc-900 mb-2">Financeiro</h1>
-          <p className="text-zinc-500 mb-8">
-            Gerencie suas contas, contatos e fluxo de caixa de forma simples e eficiente.
-          </p>
-          <button 
-            onClick={signIn}
-            className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
-          >
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/layout/google.svg" className="w-5 h-5" alt="Google" />
-            Entrar com Google
-          </button>
+          
+          <h1 className="text-4xl font-light tracking-[0.1em] uppercase text-white font-serif mb-12">
+            CRM <span className="text-gold font-bold">Financeiro</span>
+          </h1>
+
+          <div className="space-y-4">
+            <button 
+              onClick={signIn}
+              className="w-full bg-white hover:bg-zinc-200 text-black font-bold py-4 px-6 rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 group shadow-xl shadow-white/5"
+            >
+              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/layout/google.svg" className="w-5 h-5 group-hover:scale-110 transition-transform" alt="Google" />
+              <span>Entrar com Google</span>
+            </button>
+            
+            <p className="text-[10px] text-zinc-600 uppercase tracking-[0.3em] font-medium pt-8">
+              Acesso Restrito & Seguro
+            </p>
+          </div>
         </motion.div>
       </div>
     );
@@ -136,7 +148,7 @@ export default function Home() {
           <div className="w-8 h-8 bg-gold rounded flex items-center justify-center">
             <Wallet className="text-black w-5 h-5" />
           </div>
-          <span>Sistema <span className="text-gold font-bold">Financeiro</span></span>
+          <span>CRM <span className="text-gold font-bold">Financeiro</span></span>
         </div>
         <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 text-zinc-600">
           {sidebarOpen ? <X /> : <Menu />}
@@ -154,7 +166,7 @@ export default function Home() {
               <Wallet className="text-black w-6 h-6" />
             </div>
             <span className="font-serif font-light tracking-widest uppercase text-xl text-white">
-              Sistema <span className="text-gold font-bold">Financeiro</span>
+              CRM <span className="text-gold font-bold">Financeiro</span>
             </span>
           </div>
           <p className="text-[9px] uppercase tracking-[0.2em] opacity-40 ml-13">Desenvolvido por Jair</p>
