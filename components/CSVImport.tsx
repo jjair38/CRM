@@ -37,6 +37,8 @@ interface CSVRow {
   CATEGORIA: string;
   DATA_VENCIMENTO: string;
   STATUS: string;
+  PARCELA_ATUAL?: string;
+  TOTAL_PARCELAS?: string;
 }
 
 interface ImportSummary {
@@ -77,11 +79,15 @@ export function CSVImport({ user }: { user: any }) {
   }, [user]);
 
   const downloadTemplate = () => {
-    const headers = ['ID_IMPORTACAO', 'DESCRICAO', 'VALOR', 'TIPO', 'CATEGORIA', 'DATA_VENCIMENTO', 'STATUS'];
-    const example1 = ['TRX001', 'Venda de Produto A', '1500.00', 'Receita', 'Vendas', '2026-09-05', 'Pago'];
-    const example2 = ['TRX002', 'Aluguel Mensal', '2500.00', 'Despesa', 'Aluguel', '2026-09-10', 'Pendente'];
+    const headers = ['ID_IMPORTACAO', 'DESCRICAO', 'VALOR', 'TIPO', 'CATEGORIA', 'DATA_VENCIMENTO', 'STATUS', 'PARCELA_ATUAL', 'TOTAL_PARCELAS'];
+    const example1 = ['TRX001', 'Venda de Produto A', '1500.00', 'Receita', 'Vendas', '2026-09-05', 'Pago', '1', '1'];
+    const example2 = ['TRX002', 'Aluguel Mensal', '2500.00', 'Despesa', 'Aluguel', '2026-09-10', 'Pendente', '1', '12'];
     
-    const csvContent = [headers, example1, example2].map(e => e.join(',')).join('\n');
+    // Using semicolon (;) as delimiter for better Excel compatibility in Portuguese/European regions
+    // Also adding BOM (\uFEFF) to force UTF-8 recognition in Excel
+    const delimiter = ';';
+    const csvContent = '\uFEFF' + [headers, example1, example2].map(e => e.join(delimiter)).join('\n');
+    
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -108,6 +114,7 @@ export function CSVImport({ user }: { user: any }) {
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
+      delimiter: "", // Auto-detect delimiter
       complete: async (results) => {
         const rows = results.data as CSVRow[];
         const errors: string[] = [];
@@ -206,6 +213,8 @@ export function CSVImport({ user }: { user: any }) {
             category: row.CATEGORIA || 'Geral',
             dueDate: Timestamp.fromDate(dateObj),
             status: row.STATUS || 'Pendente',
+            installmentsTotal: Number(row.TOTAL_PARCELAS) || 1,
+            installmentCurrent: Number(row.PARCELA_ATUAL) || 1,
             userId: user.uid,
             createdAt: Timestamp.now(),
             updatedAt: Timestamp.now()
@@ -393,7 +402,13 @@ export function CSVImport({ user }: { user: any }) {
               <li className="flex gap-3">
                 <div className="w-5 h-5 rounded-full bg-gold/10 text-gold flex items-center justify-center text-[10px] font-bold shrink-0">4</div>
                 <div className="text-[11px] leading-relaxed text-zinc-400">
-                  <strong className="text-white">VALOR:</strong> Use números decimais. Aceita ponto ou vírgula (ex: <code className="text-zinc-300">1250,50</code>).
+                  <strong className="text-white">VALOR:</strong> Use números decimais. O Excel usará o padrão do seu sistema (ex: <code className="text-zinc-300">1250,50</code>).
+                </div>
+              </li>
+              <li className="flex gap-3">
+                <div className="w-5 h-5 rounded-full bg-gold/10 text-gold flex items-center justify-center text-[10px] font-bold shrink-0">5</div>
+                <div className="text-[11px] leading-relaxed text-zinc-400">
+                  <strong className="text-white">PARCELAS:</strong> Use <code className="text-zinc-300">PARCELA_ATUAL</code> e <code className="text-zinc-300">TOTAL_PARCELAS</code> para lançamentos parcelados.
                 </div>
               </li>
             </ul>
