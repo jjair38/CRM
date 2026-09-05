@@ -14,7 +14,7 @@ interface Message {
 
 export function FinanceBot({ user }: { user: any }) {
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'bot', content: 'Olá! Sou o **FinanceBot**. Como posso ajudar com suas finanças hoje?' }
+    { role: 'bot', content: 'Olá! Sou o **CRM Finanças**. Como posso ajudar com suas finanças hoje?' }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -121,7 +121,7 @@ export function FinanceBot({ user }: { user: any }) {
             <Sparkles size={16} className="text-black" />
           </div>
           <div>
-            <h3 className="text-[11px] uppercase tracking-[0.2em] font-bold text-white">FinanceBot Assistant</h3>
+            <h3 className="text-[11px] uppercase tracking-[0.2em] font-bold text-white">Assistente de Finanças</h3>
             <p className="text-[9px] text-[#a3e635] uppercase font-bold tracking-widest opacity-80">Online & Grounded</p>
           </div>
         </div>
@@ -157,7 +157,7 @@ export function FinanceBot({ user }: { user: any }) {
           <div className="flex justify-start">
             <div className="bg-[#1a1a1c] p-4 rounded border-l-4 border-gold/20 flex items-center gap-2">
               <Loader2 size={14} className="animate-spin text-gold" />
-              <span className="text-[10px] uppercase tracking-widest opacity-40">FinanceBot está processando...</span>
+              <span className="text-[10px] uppercase tracking-widest opacity-40">Processando informações...</span>
             </div>
           </div>
         )}
@@ -183,7 +183,7 @@ export function FinanceBot({ user }: { user: any }) {
           </button>
         </div>
         <p className="text-[9px] text-zinc-600 mt-3 text-center uppercase tracking-[0.2em]">
-          O FinanceBot utiliza o contexto atual do seu CRM para respostas precisas.
+          Utilize o contexto atual do seu CRM para respostas precisas.
         </p>
       </div>
     </div>

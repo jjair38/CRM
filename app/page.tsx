@@ -81,7 +81,7 @@ export default function Home() {
           <div className="w-16 h-16 bg-zinc-900 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <Wallet className="text-white w-8 h-8" />
           </div>
-          <h1 className="text-3xl font-bold text-zinc-900 mb-2">FinanceBot CRM</h1>
+          <h1 className="text-3xl font-bold text-zinc-900 mb-2">CRM Finanças</h1>
           <p className="text-zinc-500 mb-8">
             Gerencie suas contas, contatos e fluxo de caixa com a ajuda de inteligência artificial.
           </p>
@@ -100,7 +100,7 @@ export default function Home() {
   const menuItems = [
     { id: 'dashboard', label: 'Painel', icon: LayoutDashboard },
     { id: 'transactions', label: 'Lançamentos', icon: Receipt },
-    { id: 'chat', label: 'FinanceBot', icon: MessageSquare },
+    { id: 'chat', label: 'CRM Finanças', icon: MessageSquare },
   ];
 
   return (
@@ -117,7 +117,7 @@ export default function Home() {
           <div className="w-8 h-8 bg-gold rounded flex items-center justify-center">
             <Wallet className="text-black w-5 h-5" />
           </div>
-          <span>Finance<span className="text-gold font-bold">Bot</span></span>
+          <span>CRM <span className="text-gold font-bold">Finanças</span></span>
         </div>
         <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 text-zinc-600">
           {sidebarOpen ? <X /> : <Menu />}
@@ -135,10 +135,10 @@ export default function Home() {
               <Wallet className="text-black w-6 h-6" />
             </div>
             <span className="font-serif font-light tracking-widest uppercase text-xl text-white">
-              Finance<span className="text-gold font-bold">Bot</span>
+              CRM <span className="text-gold font-bold">Finanças</span>
             </span>
           </div>
-          <p className="text-[9px] uppercase tracking-[0.2em] opacity-40 ml-13">CRM Controle</p>
+          <p className="text-[9px] uppercase tracking-[0.2em] opacity-40 ml-13">Desenvolvido por Jair</p>
         </div>
 
         <nav className="flex-1 px-4 space-y-2">

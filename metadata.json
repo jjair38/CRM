@@ -1,5 +1,5 @@
 {
-  "name": "Controle Financeiro CRM",
+  "name": "CRM Finanças",
   "description": "Um CRM inteligente para gestão de contas a pagar e receber com assistente IA.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

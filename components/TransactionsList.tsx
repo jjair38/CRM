@@ -48,7 +48,14 @@ export function TransactionsList({ user, compact = false, onEdit }: { user: any,
   }, [user?.uid]);
 
   const handleDelete = async (id: string) => {
-    // Usando uma confirmação mais amigável
+    if (!user?.uid) {
+      alert('Usuário não autenticado.');
+      return;
+    }
+
+    console.log('[DELETE] Usuário:', user.uid);
+    console.log('[DELETE] ID do Documento:', id);
+    
     const isConfirmed = window.confirm('Deseja excluir este lançamento permanentemente?');
     if (!isConfirmed) return;
 
@@ -56,10 +63,11 @@ export function TransactionsList({ user, compact = false, onEdit }: { user: any,
     const path = `transactions/${id}`;
     try {
       const docRef = doc(db, 'transactions', id);
+      console.log('[DELETE] Caminho:', docRef.path);
       await deleteDoc(docRef);
-      // O onSnapshot cuidará de remover da lista automaticamente
+      console.log('[DELETE] Sucesso!');
     } catch (error) {
-      console.error('Erro ao excluir:', error);
+      console.error('[DELETE] Erro:', error);
       handleFirestoreError(error, OperationType.DELETE, path);
     } finally {
       setDeletingId(null);
@@ -158,10 +166,10 @@ export function TransactionsList({ user, compact = false, onEdit }: { user: any,
                           e.stopPropagation();
                           onEdit?.(t);
                         }}
-                        className="p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded transition-all"
+                        className="p-2.5 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all"
                         title="Editar"
                       >
-                        <Pencil size={14} />
+                        <Pencil size={16} />
                       </button>
                       <button 
                         onClick={(e) => {
@@ -169,10 +177,10 @@ export function TransactionsList({ user, compact = false, onEdit }: { user: any,
                           handleDelete(t.id);
                         }}
                         disabled={deletingId === t.id}
-                        className={`p-1.5 rounded transition-all ${deletingId === t.id ? 'text-zinc-700' : 'text-zinc-500 hover:text-red-400 hover:bg-red-400/10'}`}
+                        className={`p-2.5 rounded-lg transition-all ${deletingId === t.id ? 'text-zinc-700' : 'text-zinc-500 hover:text-red-400 hover:bg-red-400/10'}`}
                         title="Excluir"
                       >
-                        {deletingId === t.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                        {deletingId === t.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                       </button>
                     </div>
                   </td>
