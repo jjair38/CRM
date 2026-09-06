@@ -243,7 +243,30 @@ export default function Home() {
             );
           })}
           
-          <PWAInstallButton />
+          <div className="pt-4 mt-4 border-t border-white/5 space-y-4 px-4">
+            <span className="text-[9px] uppercase tracking-[0.3em] text-zinc-600 font-bold px-4">Ações</span>
+            <div className="space-y-2">
+              <PWAInstallButton />
+              <button 
+                onClick={() => {
+                  if (navigator.share) {
+                    navigator.share({
+                      title: 'CRM Financeiro',
+                      text: 'Gestão patrimonial consolidada e controle financeiro de elite.',
+                      url: window.location.origin,
+                    });
+                  } else {
+                    navigator.clipboard.writeText(window.location.origin);
+                    alert('Link copiado para a área de transferência!');
+                  }
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded text-[11px] uppercase tracking-wider font-medium text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300 transition-all"
+              >
+                <FileUp size={16} />
+                Compartilhar App
+              </button>
+            </div>
+          </div>
         </nav>
 
         <div className="p-4 border-t border-border-dark">

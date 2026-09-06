@@ -12,18 +12,20 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: 'CRM Financeiro',
-  description: 'Controle financeiro de elite desenvolvido por Jair',
+  description: 'Gestão patrimonial consolidada e controle financeiro de elite.',
+  applicationName: 'FinCRM',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'CRM Financeiro',
+    title: 'FinCRM',
   },
   icons: {
     apple: '/pwa-icon.jpg',
   },
+  manifest: '/manifest.json',
   openGraph: {
     title: 'CRM Financeiro',
-    description: 'Controle financeiro de elite desenvolvido por Jair',
+    description: 'Gestão patrimonial consolidada e controle financeiro de elite.',
     type: 'website',
   },
 };
