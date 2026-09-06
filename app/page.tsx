@@ -208,7 +208,7 @@ export default function Home() {
           <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-white">Configurações</span>
           <button onClick={() => setSidebarOpen(false)} className="text-zinc-500"><X size={20} /></button>
         </div>
-        <div className="p-6 hidden md:flex flex-col mb-8 border-b border-border-dark">
+        <div className="p-6 hidden md:flex flex-col mb-2 border-b border-border-dark">
           <div className="flex items-center gap-3 mb-1">
             <div className="w-10 h-10 bg-gold rounded flex items-center justify-center">
               <Wallet className="text-black w-6 h-6" />
@@ -218,6 +218,23 @@ export default function Home() {
             </span>
           </div>
           <p className="text-[9px] uppercase tracking-[0.2em] opacity-40 ml-13">Desenvolvido por Jair</p>
+        </div>
+
+        {/* Perfil no Topo */}
+        <div className="px-6 py-4 border-b border-border-dark mb-4">
+          <div className="flex items-center gap-3 mb-4">
+            <img src={user.photoURL || ''} alt={user.displayName || ''} className="w-10 h-10 rounded-full border border-gold/30 p-0.5 shadow-lg shadow-gold/5" />
+            <div className="flex-1 overflow-hidden">
+              <p className="text-xs font-bold text-white truncate">{user.displayName}</p>
+              <button 
+                onClick={logout}
+                className="text-[9px] uppercase tracking-widest font-bold text-red-400 hover:text-red-300 transition-colors flex items-center gap-1.5 mt-1"
+              >
+                <LogOut size={10} />
+                Sair da Conta
+              </button>
+            </div>
+          </div>
         </div>
 
         <nav className="flex-1 px-4 space-y-2">
@@ -269,22 +286,6 @@ export default function Home() {
           </div>
         </nav>
 
-        <div className="p-4 border-t border-border-dark">
-          <div className="flex items-center gap-3 mb-4 px-2">
-            <img src={user.photoURL || ''} alt={user.displayName || ''} className="w-10 h-10 rounded border border-border-dark opacity-80" />
-            <div className="flex-1 overflow-hidden">
-              <p className="text-xs font-semibold text-white truncate">{user.displayName}</p>
-              <p className="text-[10px] text-zinc-500 truncate">{user.email}</p>
-            </div>
-          </div>
-          <button 
-            onClick={logout}
-            className="w-full flex items-center gap-3 px-4 py-2 rounded text-[10px] uppercase tracking-widest font-bold text-red-400 hover:bg-red-950/30 transition-all"
-          >
-            <LogOut size={14} />
-            Sair
-          </button>
-        </div>
       </aside>
 
       {/* Main Content */}
