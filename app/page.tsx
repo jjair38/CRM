@@ -128,7 +128,7 @@ export default function Home() {
               onClick={signIn}
               className="w-full bg-white hover:bg-zinc-200 text-black font-bold py-4 px-6 rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 group shadow-xl shadow-white/5"
             >
-              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/layout/google.svg" className="w-5 h-5 group-hover:scale-110 transition-transform" alt="Google" />
+              <img src="https://www.google.com/favicon.ico" className="w-5 h-5 group-hover:scale-110 transition-transform" alt="Google" />
               <span>Entrar com Google</span>
             </button>
             

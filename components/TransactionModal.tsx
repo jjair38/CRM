@@ -36,37 +36,43 @@ export function TransactionModal({ isOpen, onClose, user, initialData }: Transac
     if (!isOpen) return;
     
     const today = new Date().toISOString().split('T')[0];
-    if (initialData) {
-      setFormData({
-        description: initialData.description || '',
-        value: initialData.value?.toString() || '',
-        type: initialData.type || 'Despesa',
-        dueDate: initialData.dueDate?.toDate ? initialData.dueDate.toDate().toISOString().split('T')[0] : today,
-        category: initialData.category || 'Geral',
-        status: initialData.status || 'Pendente',
-        paymentMethod: initialData.paymentMethod || 'PIX',
-        installmentsTotal: initialData.installmentsTotal?.toString() || '1',
-        installmentCurrent: initialData.installmentCurrent?.toString() || '1',
-        isRecurring: false,
-        recurringFrequency: 'mensal',
-        recurringRepetitions: '1'
-      });
-    } else {
-      setFormData({
-        description: '',
-        value: '',
-        type: 'Despesa',
-        dueDate: today,
-        category: 'Geral',
-        status: 'Pendente',
-        paymentMethod: 'PIX',
-        installmentsTotal: '1',
-        installmentCurrent: '1',
-        isRecurring: false,
-        recurringFrequency: 'mensal',
-        recurringRepetitions: '1'
-      });
-    }
+    
+    // Use a function to ensure we don't trigger cascading renders if not needed
+    const updateForm = () => {
+      if (initialData) {
+        setFormData({
+          description: initialData.description || '',
+          value: initialData.value?.toString() || '',
+          type: initialData.type || 'Despesa',
+          dueDate: initialData.dueDate?.toDate ? initialData.dueDate.toDate().toISOString().split('T')[0] : today,
+          category: initialData.category || 'Geral',
+          status: initialData.status || 'Pendente',
+          paymentMethod: initialData.paymentMethod || 'PIX',
+          installmentsTotal: initialData.installmentsTotal?.toString() || '1',
+          installmentCurrent: initialData.installmentCurrent?.toString() || '1',
+          isRecurring: false,
+          recurringFrequency: 'mensal',
+          recurringRepetitions: '1'
+        });
+      } else {
+        setFormData({
+          description: '',
+          value: '',
+          type: 'Despesa',
+          dueDate: today,
+          category: 'Geral',
+          status: 'Pendente',
+          paymentMethod: 'PIX',
+          installmentsTotal: '1',
+          installmentCurrent: '1',
+          isRecurring: false,
+          recurringFrequency: 'mensal',
+          recurringRepetitions: '1'
+        });
+      }
+    };
+
+    updateForm();
   }, [initialData, isOpen]);
 
   function formatInputDate(date: Date) {

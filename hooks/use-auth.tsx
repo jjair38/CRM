@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, User, signInWithPopup, signOut } from 'firebase/auth';
+import { onAuthStateChanged, User, signInWithPopup, signOut, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase';
 
 interface AuthContextType {
@@ -23,18 +23,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
     });
 
+    // Check for redirect result on mount
+    getRedirectResult(auth).catch((error) => {
+      console.error('Redirect sign in error:', error);
+    });
+
     return () => unsubscribe();
   }, []);
 
   const signIn = async () => {
     try {
+      // Set a flag to prevent multiple clicks if needed, but Firebase handles some of this
       await signInWithPopup(auth, googleProvider);
     } catch (error: any) {
       console.error('Sign in error:', error);
-      if (error.code === 'auth/unauthorized-domain') {
-        alert('Este domínio não está autorizado no Firebase. Adicione o seu domínio do Vercel em: Console do Firebase > Authentication > Settings > Authorized Domains.');
-      } else if (error.code === 'auth/popup-blocked') {
-        alert('O pop-up de login foi bloqueado pelo seu navegador. Por favor, permita pop-ups para este site.');
+      
+      if (error.code === 'auth/popup-blocked') {
+        // Fallback to redirect if popup is blocked
+        try {
+          await signInWithRedirect(auth, googleProvider);
+        } catch (redirectError: any) {
+          alert('Erro ao redirecionar para login: ' + redirectError.message);
+        }
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        // This usually means a previous popup was still pending.
+        // We can ignore it or tell the user to wait.
+        console.warn('Uma requisição de login já estava em andamento.');
+      } else if (error.code === 'auth/unauthorized-domain') {
+        alert('Este domínio não está autorizado no Firebase. Adicione o seu domínio atual em: Console do Firebase > Authentication > Settings > Authorized Domains.');
       } else {
         alert('Erro ao entrar com Google: ' + (error.message || 'Erro desconhecido'));
       }
