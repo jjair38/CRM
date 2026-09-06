@@ -265,14 +265,14 @@ export default function Home() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-4 md:p-8 max-w-6xl mx-auto w-full pb-32 md:pb-8">
+      <main className="flex-1 p-6 md:p-12 max-w-7xl mx-auto w-full pb-32 md:pb-16 bg-dark-bg">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
           >
             {activeTab === 'dashboard' && (
               <Dashboard 
@@ -286,12 +286,12 @@ export default function Home() {
               />
             )}
             {activeTab === 'transactions' && (
-              <div className="bg-card-bg p-6 rounded border border-border-dark shadow-xl">
+              <div className="bg-card-bg p-8 rounded-3xl border border-border-dark shadow-2xl">
                 <TransactionsList user={user} onEdit={handleOpenEditModal} showValues={showValues} />
               </div>
             )}
             {activeTab === 'import' && (
-              <div className="bg-card-bg p-8 rounded border border-border-dark shadow-xl">
+              <div className="bg-card-bg p-10 rounded-3xl border border-border-dark shadow-2xl">
                 <CSVImport user={user} />
               </div>
             )}
@@ -321,42 +321,44 @@ function Dashboard({
   onSeeAll: () => void
 }) {
   return (
-    <div className="space-y-8">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border-dark pb-6">
-        <div>
-          <h2 className="text-2xl font-light text-white font-serif">Olá, {user.displayName?.split(' ')[0]}</h2>
-          <p className="text-[10px] uppercase tracking-[0.2em] opacity-40">Resumo financeiro consolidado</p>
+    <div className="space-y-12">
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-white/5">
+        <div className="space-y-2">
+          <h2 className="text-4xl font-sans font-bold text-white tracking-tight">
+            Excelência, <span className="text-gold">{user.displayName?.split(' ')[0]}</span>
+          </h2>
+          <p className="text-[10px] uppercase tracking-[0.4em] text-zinc-500 font-bold">Gestão Patrimonial Consolidada</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <button 
             onClick={onRefresh}
-            className="p-2 rounded-full border border-border-dark text-zinc-400 hover:bg-zinc-800 transition-all"
+            className="p-3 rounded-full border border-border-dark text-zinc-500 hover:bg-white/5 hover:text-white transition-all duration-300"
             title="Atualizar Página"
           >
-            <RefreshCcw size={14} />
+            <RefreshCcw size={16} />
           </button>
           <button 
             onClick={() => setShowValues(!showValues)}
-            className="flex items-center gap-2 px-4 py-2 rounded-full border border-border-dark text-[10px] uppercase tracking-widest font-bold hover:bg-zinc-800 transition-all text-zinc-400"
-            title={showValues ? "Ocultar Valores" : "Mostrar Valores"}
+            className="flex items-center gap-2 px-6 py-3 rounded-full border border-border-dark text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-white/5 transition-all duration-300 text-zinc-400"
           >
             {showValues ? <EyeOff size={14} /> : <Eye size={14} />}
-            <span className="hidden sm:inline">{showValues ? "Ocultar Valores" : "Mostrar Valores"}</span>
+            <span className="hidden sm:inline">{showValues ? "Privacidade Ativa" : "Exibir Dados"}</span>
           </button>
           <button 
             onClick={onNewTransaction}
-            className="bg-gold hover:bg-white text-black px-6 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-gold/10 transition-all"
+            className="bg-gold hover:bg-gold-light text-black px-8 py-3 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] shadow-2xl shadow-gold/10 transition-all duration-500 transform hover:-translate-y-0.5"
           >
-            <Plus size={16} className="inline mr-1" />
-            Novo Lançamento
+            <Plus size={16} className="inline mr-2" />
+            Lançamento
           </button>
         </div>
       </header>
 
-      <UpcomingAlerts user={user} onEdit={onEditTransaction} showValues={showValues} />
-
-      <SummaryCards user={user} showValues={showValues} />
-      <FutureProjection user={user} showValues={showValues} />
+      <section className="space-y-12">
+        <UpcomingAlerts user={user} onEdit={onEditTransaction} showValues={showValues} />
+        <SummaryCards user={user} showValues={showValues} />
+        <FutureProjection user={user} showValues={showValues} />
+      </section>
     </div>
   );
 }

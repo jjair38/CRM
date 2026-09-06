@@ -144,55 +144,55 @@ export function FutureProjection({ user, showValues = true }: { user: any, showV
               key={`${proj.monthName}-${proj.year}`}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
+              transition={{ delay: index * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
               onClick={() => setSelectedMonth(proj)}
-              className={`p-5 rounded-2xl border cursor-pointer transition-all group ${
+              className={`p-6 rounded-3xl border cursor-pointer transition-all duration-500 group ${
                 selectedMonth?.monthName === proj.monthName && selectedMonth?.year === proj.year
-                ? 'bg-gold/10 border-gold/50'
-                : 'bg-[#111113] border-white/5 hover:border-gold/30'
+                ? 'bg-gold/10 border-gold/40 shadow-2xl shadow-gold/5'
+                : 'bg-card-bg border-white/5 hover:border-gold/20'
               }`}
             >
-              <div className="flex items-center justify-between mb-4">
-                <span className={`text-[10px] uppercase tracking-widest font-bold transition-colors ${
+              <div className="flex items-center justify-between mb-6">
+                <span className={`text-[10px] uppercase tracking-[0.3em] font-bold transition-colors duration-500 ${
                   selectedMonth?.monthName === proj.monthName && selectedMonth?.year === proj.year
                   ? 'text-gold'
-                  : 'text-zinc-500 group-hover:text-gold'
+                  : 'text-zinc-500 group-hover:text-gold/60'
                 }`}>
-                  {proj.monthName} <span className="opacity-30">{proj.year}</span>
+                  {proj.monthName} <span className="opacity-20">{proj.year}</span>
                 </span>
-                <div className={`p-1 rounded transition-colors ${
+                <div className={`p-1.5 rounded-lg transition-all duration-500 ${
                   selectedMonth?.monthName === proj.monthName && selectedMonth?.year === proj.year
-                  ? 'bg-gold text-black'
+                  ? 'bg-gold text-black shadow-lg shadow-gold/20'
                   : 'bg-zinc-900 text-zinc-600 group-hover:bg-gold/10 group-hover:text-gold'
                 }`}>
-                  <ArrowRight size={10} />
+                  <ArrowRight size={12} />
                 </div>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <TrendingUp size={12} className="text-[#a3e635] opacity-50" />
-                    <span className="text-[9px] uppercase text-zinc-500">Entradas</span>
+                    <TrendingUp size={14} className="text-lime-vibrant opacity-40" />
+                    <span className="text-[10px] uppercase tracking-wider text-zinc-500">Entradas</span>
                   </div>
-                  <span className={`text-xs font-medium text-white ${!showValues ? 'blur-[4px]' : ''}`}>
+                  <span className={`text-sm font-medium text-white ${!showValues ? 'blur-[5px]' : ''}`}>
                     {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proj.totalIn)}
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <TrendingDown size={12} className="text-[#fb7185] opacity-50" />
-                    <span className="text-[9px] uppercase text-zinc-500">Saídas</span>
+                    <TrendingDown size={14} className="text-rose-soft opacity-40" />
+                    <span className="text-[10px] uppercase tracking-wider text-zinc-500">Saídas</span>
                   </div>
-                  <span className={`text-xs font-medium text-white ${!showValues ? 'blur-[4px]' : ''}`}>
+                  <span className={`text-sm font-medium text-white ${!showValues ? 'blur-[5px]' : ''}`}>
                     {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proj.totalOut)}
                   </span>
                 </div>
 
-                <div className="pt-3 border-t border-white/5 flex items-center justify-between">
-                  <span className="text-[9px] uppercase font-bold text-zinc-400">Saldo</span>
-                  <span className={`text-sm font-serif ${proj.balance >= 0 ? 'text-gold' : 'text-[#fb7185]'} ${!showValues ? 'blur-[4px]' : ''}`}>
+                <div className="pt-4 border-t border-white/5 flex items-center justify-between">
+                  <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-widest">Saldo</span>
+                  <span className={`text-lg font-sans font-bold ${proj.balance >= 0 ? 'text-gold' : 'text-rose-soft'} ${!showValues ? 'blur-[6px]' : ''}`}>
                     {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proj.balance)}
                   </span>
                 </div>
@@ -222,7 +222,7 @@ export function FutureProjection({ user, showValues = true }: { user: any, showV
             </div>
             <div className="text-right">
               <p className="text-[9px] uppercase text-zinc-500 font-bold mb-1 tracking-tighter">Saldo Líquido Previsto</p>
-              <p className={`text-xl font-serif ${selectedMonth.balance >= 0 ? 'text-gold' : 'text-[#fb7185]'} ${!showValues ? 'blur-[8px]' : ''}`}>
+              <p className={`text-xl font-sans font-bold ${selectedMonth.balance >= 0 ? 'text-gold' : 'text-[#fb7185]'} ${!showValues ? 'blur-[8px]' : ''}`}>
                 {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(selectedMonth.balance)}
               </p>
             </div>
@@ -274,7 +274,7 @@ export function FutureProjection({ user, showValues = true }: { user: any, showV
                           {trx.status}
                         </span>
                       </td>
-                      <td className={`px-6 py-4 text-right text-xs font-serif ${
+                      <td className={`px-6 py-4 text-right text-xs font-sans font-bold ${
                         trx.type === 'Receita' ? 'text-[#a3e635]' : 'text-[#fb7185]'
                       } ${!showValues ? 'blur-[4px]' : ''}`}>
                         {trx.type === 'Receita' ? '+' : '-'} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(trx.value)}
@@ -304,7 +304,7 @@ export function FutureProjection({ user, showValues = true }: { user: any, showV
               </div>
               <div>
                 <p className="text-[9px] uppercase text-zinc-500 font-bold">Total Receitas</p>
-                <p className={`text-sm text-white font-serif ${!showValues ? 'blur-[4px]' : ''}`}>
+                <p className={`text-sm text-white font-sans font-bold ${!showValues ? 'blur-[4px]' : ''}`}>
                   {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(selectedMonth.totalIn)}
                 </p>
               </div>
@@ -316,7 +316,7 @@ export function FutureProjection({ user, showValues = true }: { user: any, showV
               </div>
               <div>
                 <p className="text-[9px] uppercase text-zinc-500 font-bold">Total Despesas</p>
-                <p className={`text-sm text-white font-serif ${!showValues ? 'blur-[4px]' : ''}`}>
+                <p className={`text-sm text-white font-sans font-bold ${!showValues ? 'blur-[4px]' : ''}`}>
                   {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(selectedMonth.totalOut)}
                 </p>
               </div>

@@ -199,53 +199,55 @@ export function TransactionsList({ user, compact = false, onEdit, showValues = t
                 <div 
                   key={t.id} 
                   onClick={() => onEdit?.(t)}
-                  className={`bg-[#111113] p-4 rounded-xl border border-border-dark shadow-lg active:scale-[0.98] transition-all ${deletingId === t.id ? 'opacity-30 pointer-events-none' : ''}`}
+                  className={`bg-card-bg p-6 rounded-3xl border border-white/5 shadow-2xl active:scale-[0.98] transition-all duration-500 hover:border-gold/20 group ${deletingId === t.id ? 'opacity-30 pointer-events-none' : ''}`}
                 >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${t.type === 'Receita' ? 'bg-[#a3e635]/10 text-[#a3e635]' : 'bg-[#fb7185]/10 text-[#fb7185]'}`}>
-                        <Icon size={18} />
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 ${t.type === 'Receita' ? 'bg-lime-vibrant/10 text-lime-vibrant shadow-lg shadow-lime-vibrant/5' : 'bg-rose-soft/10 text-rose-soft shadow-lg shadow-rose-soft/5'}`}>
+                        <Icon size={20} />
                       </div>
                       <div>
-                        <h4 className="text-white font-medium text-sm">{t.description}</h4>
-                        <div className="flex items-center gap-2">
-                          <p className="text-[10px] uppercase tracking-wider text-zinc-500">{t.category}</p>
+                        <h4 className="text-white font-medium text-base group-hover:text-gold transition-colors duration-500">{t.description}</h4>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-bold">{t.category}</p>
                           {t.installmentsTotal > 1 && (
-                            <span className="text-[9px] text-gold/60 font-bold">
-                              • {t.installmentCurrent}/{t.installmentsTotal} ({t.installmentsTotal - t.installmentCurrent} faltam)
+                            <span className="text-[10px] text-gold/40 font-bold uppercase tracking-tighter">
+                              • {t.installmentCurrent}/{t.installmentsTotal}
                             </span>
                           )}
                         </div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className={`text-sm font-bold ${t.type === 'Receita' ? 'text-[#a3e635]' : 'text-white'} ${!showValues ? 'blur-sm' : ''}`}>
+                      <p className={`text-lg font-sans font-bold ${t.type === 'Receita' ? 'text-lime-vibrant' : 'text-white'} ${!showValues ? 'blur-lg select-none opacity-20' : 'opacity-100'}`}>
                         {t.type === 'Receita' ? '+' : '-'} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(t.value)}
                       </p>
-                      <p className="text-[10px] text-zinc-600 mt-0.5">{t.dueDate?.toDate ? format(t.dueDate.toDate(), "dd/MM/yyyy") : '---'}</p>
+                      <p className="text-[10px] uppercase tracking-widest text-zinc-600 font-bold mt-1">{t.dueDate?.toDate ? format(t.dueDate.toDate(), "dd MMM yyyy", { locale: ptBR }) : '---'}</p>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between pt-3 border-t border-white/5">
-                    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] uppercase font-bold border ${
-                      actualStatus === 'Pago' ? 'bg-[#a3e635]/10 text-[#a3e635] border-[#a3e635]/20' : 
-                      actualStatus === 'Pendente' ? 'bg-[#fbbf24]/10 text-[#fbbf24] border-[#fbbf24]/20' : 
-                      'bg-[#fb7185]/10 text-[#fb7185] border-[#fb7185]/20'
+                  <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                    <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] uppercase font-bold border transition-all duration-500 ${
+                      actualStatus === 'Pago' ? 'bg-lime-vibrant/10 text-lime-vibrant border-lime-vibrant/20' : 
+                      actualStatus === 'Pendente' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 
+                      'bg-rose-soft/10 text-rose-soft border-rose-soft/20'
                     }`}>
-                      <div className={`w-1.5 h-1.5 rounded-full ${
-                        actualStatus === 'Pago' ? 'bg-[#a3e635]' : 
-                        actualStatus === 'Pendente' ? 'bg-[#fbbf24]' : 'bg-[#fb7185]'
+                      <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${
+                        actualStatus === 'Pago' ? 'bg-lime-vibrant' : 
+                        actualStatus === 'Pendente' ? 'bg-amber-500' : 'bg-rose-soft'
                       }`}></div>
                       {actualStatus}
                     </div>
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(t.id);
-                      }}
-                      className="text-zinc-600 hover:text-red-400 p-2"
-                    >
-                      {deletingId === t.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(t.id);
+                        }}
+                        className="text-zinc-700 hover:text-rose-soft p-2 transition-colors duration-300"
+                      >
+                        {deletingId === t.id ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
+                      </button>
+                    </div>
                   </div>
                 </div>
               );

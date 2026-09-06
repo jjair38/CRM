@@ -119,17 +119,17 @@ export function SummaryCards({ user, showValues = true }: { user: any, showValue
               key={card.label}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-card-bg p-6 rounded border border-border-dark shadow-xl flex flex-col justify-between h-32"
+              transition={{ delay: index * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className="bg-card-bg p-8 rounded-3xl border border-white/5 shadow-2xl flex flex-col justify-between h-40 group hover:border-gold/20 transition-all duration-500"
             >
               <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase tracking-[0.2em] opacity-50 font-bold">{card.label}</span>
-                <div className={`p-1.5 rounded ${card.bg}`}>
-                  <Icon size={14} className={card.color} />
+                <span className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 font-bold group-hover:text-gold/60 transition-colors duration-500">{card.label}</span>
+                <div className={`p-2 rounded-xl transition-all duration-500 group-hover:scale-110 ${card.bg}`}>
+                  <Icon size={16} className={card.color} />
                 </div>
               </div>
               <div className="flex flex-col">
-                <span className={`text-2xl font-light transition-all duration-300 ${card.color} ${!showValues ? 'blur-md select-none' : ''}`}>
+                <span className={`text-3xl font-sans font-bold tracking-tight transition-all duration-700 ${card.color} ${!showValues ? 'blur-lg select-none opacity-20' : 'opacity-100'}`}>
                   {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(card.value)}
                 </span>
               </div>
