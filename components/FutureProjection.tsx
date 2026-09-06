@@ -255,7 +255,7 @@ export function FutureProjection({ user, showValues = true }: { user: any, showV
                         {trx.dueDate?.toDate ? format(trx.dueDate.toDate(), 'dd/MM/yyyy') : '---'}
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-[11px] text-white font-medium group-hover:text-gold transition-colors">{trx.description}</span>
+                        <span className="text-[11px] text-white font-medium group-hover:text-gold transition-colors uppercase">{trx.description}</span>
                       </td>
                       <td className="px-6 py-4">
                         <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 border border-white/5 uppercase font-bold tracking-tighter">
