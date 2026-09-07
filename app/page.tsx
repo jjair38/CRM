@@ -99,10 +99,58 @@ export default function Home() {
     }
   }, []);
 
-  const toggleSecurity = () => {
+  const toggleSecurity = async () => {
     const newValue = !securityEnabled;
-    setSecurityEnabled(newValue);
-    localStorage.setItem('biometric_security_enabled', String(newValue));
+    
+    if (newValue) {
+      // Se estiver ativando, precisamos "registrar" o dispositivo
+      try {
+        if (!window.PublicKeyCredential) {
+          alert('Seu navegador não suporta biometria.');
+          return;
+        }
+
+        const challenge = new Uint8Array(32);
+        window.crypto.getRandomValues(challenge);
+
+        const options: any = {
+          publicKey: {
+            challenge,
+            rp: { name: "CRM Financeiro" },
+            user: {
+              id: Uint8Array.from(user?.uid || 'user', c => c.charCodeAt(0)),
+              name: user?.email || 'user',
+              displayName: user?.displayName || 'Usuário'
+            },
+            pubKeyCredParams: [{ alg: -7, type: "public-key" }, { alg: -257, type: "public-key" }],
+            timeout: 60000,
+            authenticatorSelection: {
+              authenticatorAttachment: "platform",
+              userVerification: "required"
+            }
+          }
+        };
+
+        const credential: any = await navigator.credentials.create(options);
+        if (credential) {
+          // Salva o ID da credencial para uso futuro
+          const credentialId = btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
+          localStorage.setItem('device_auth_credential_id', credentialId);
+          setSecurityEnabled(true);
+          localStorage.setItem('biometric_security_enabled', 'true');
+        }
+      } catch (err: any) {
+        console.error('Erro ao configurar biometria:', err);
+        if (err.name !== 'NotAllowedError') {
+          alert('Não foi possível configurar o bloqueio: ' + err.message);
+        }
+      }
+    } else {
+      // Desativando
+      setSecurityEnabled(false);
+      localStorage.setItem('biometric_security_enabled', 'false');
+      localStorage.removeItem('device_auth_credential_id');
+    }
   };
 
   const handleOpenNewModal = () => {

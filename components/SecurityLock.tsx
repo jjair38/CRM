@@ -2,13 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Fingerprint, Lock, ShieldCheck, ShieldAlert, Key } from 'lucide-react';
+import { Fingerprint, Lock, ShieldCheck, ShieldAlert, LogOut } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
 
 interface SecurityLockProps {
   onUnlock: () => void;
 }
 
 export function SecurityLock({ onUnlock }: SecurityLockProps) {
+  const { logout } = useAuth();
   const [status, setStatus] = useState<'idle' | 'authenticating' | 'error' | 'success'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -21,23 +23,33 @@ export function SecurityLock({ onUnlock }: SecurityLockProps) {
         throw new Error('Biometria não suportada neste navegador.');
       }
 
-      const available = await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-      if (!available) {
-        throw new Error('Autenticação biométrica não disponível no dispositivo.');
-      }
-
       const challenge = new Uint8Array(32);
       window.crypto.getRandomValues(challenge);
 
+      // Busca o ID da credencial salva
+      const savedId = localStorage.getItem('device_auth_credential_id');
+      let allowCredentials: any[] = [];
+      
+      if (savedId) {
+        const binaryId = Uint8Array.from(atob(savedId), c => c.charCodeAt(0));
+        allowCredentials = [{
+          id: binaryId,
+          type: 'public-key',
+          transports: ['internal']
+        }];
+      }
+
       const options: any = {
         publicKey: {
-          challenge: challenge,
+          challenge,
           timeout: 60000,
           userVerification: 'required',
-          allowCredentials: [] 
+          allowCredentials
         }
       };
 
+      // Se não houver credencial salva, Safari pode dar erro. 
+      // Em vez de falhar silenciosamente, tentamos o get e capturamos o erro específico.
       await navigator.credentials.get(options);
       
       setStatus('success');
@@ -47,7 +59,14 @@ export function SecurityLock({ onUnlock }: SecurityLockProps) {
     } catch (err: any) {
       console.error('Erro na autenticação:', err);
       setStatus('error');
-      setErrorMessage(err.message || 'Falha ao verificar identidade.');
+      
+      if (err.name === 'NotAllowedError') {
+        setErrorMessage('Acesso cancelado ou não autorizado.');
+      } else if (!localStorage.getItem('device_auth_credential_id')) {
+        setErrorMessage('Nenhuma chave de segurança encontrada. Você precisará reativar o bloqueio nas configurações.');
+      } else {
+        setErrorMessage('Falha ao verificar identidade. Use sua biometria ou código.');
+      }
     }
   }, [onUnlock]);
 
@@ -116,10 +135,10 @@ export function SecurityLock({ onUnlock }: SecurityLockProps) {
           </p>
         </div>
 
-        <div className="pt-8">
+        <div className="pt-8 space-y-4">
           {status === 'error' ? (
             <div className="space-y-6">
-              <p className="text-[10px] text-rose-soft font-bold uppercase tracking-widest">{errorMessage}</p>
+              <p className="text-[10px] text-rose-soft font-bold uppercase tracking-widest leading-relaxed max-w-[250px] mx-auto">{errorMessage}</p>
               <button
                 onClick={handleAuthenticate}
                 className="w-full py-4 bg-zinc-900 text-white rounded-2xl border border-white/5 hover:bg-zinc-800 transition-all uppercase text-[10px] tracking-[0.2em] font-bold"
@@ -136,6 +155,18 @@ export function SecurityLock({ onUnlock }: SecurityLockProps) {
               <span>Desbloquear</span>
             </button>
           )}
+
+          <button
+            onClick={() => {
+              localStorage.removeItem('biometric_security_enabled');
+              localStorage.removeItem('device_auth_credential_id');
+              logout();
+            }}
+            className="w-full py-3 text-zinc-600 hover:text-zinc-400 transition-all uppercase text-[8px] tracking-[0.3em] font-bold flex items-center justify-center gap-2"
+          >
+            <LogOut size={12} />
+            Sair e redefinir segurança
+          </button>
         </div>
       </motion.div>
 
