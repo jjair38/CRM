@@ -3,19 +3,17 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
-import { TrendingUp, TrendingDown, Calendar, ArrowRight } from 'lucide-react';
-import { motion } from 'motion/react';
+import { TrendingUp, TrendingDown, Calendar, ArrowRight, Check, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   format, 
   startOfMonth, 
   addMonths, 
   isWithinInterval, 
   endOfMonth,
-  isAfter
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { updateDoc, doc as firestoreDoc } from 'firebase/firestore';
-import { Check } from 'lucide-react';
 
 interface MonthProjection {
   monthName: string;
@@ -88,10 +86,7 @@ export function FutureProjection({ user, showValues = true }: { user: any, showV
 
         setProjections(monthData);
         
-        // Default select current month if none selected
-        if (!selectedMonth) {
-          setSelectedMonth(monthData[0]);
-        }
+        // Removed auto-selection to allow user to trigger the popup manually
       },
       (error) => {
         console.warn('Listener de projeção pausado (permissão):', error.message);
@@ -202,176 +197,199 @@ export function FutureProjection({ user, showValues = true }: { user: any, showV
         </div>
       </div>
 
-      {/* DETAILED VIEW SECTION */}
-      {selectedMonth && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          key={selectedMonth.monthName}
-          className="bg-card-bg rounded-2xl border border-border-dark overflow-hidden shadow-2xl"
-        >
-          <div className="p-6 border-b border-border-dark flex items-center justify-between bg-zinc-900/30">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center border border-gold/20">
-                <Calendar size={18} className="text-gold" />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-white uppercase tracking-wider">Detalhamento Mensal</h4>
-                <p className="text-[10px] text-zinc-500 uppercase tracking-widest">{selectedMonth.monthName} {selectedMonth.year}</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-[9px] uppercase text-zinc-500 font-bold mb-1 tracking-tighter">Saldo Líquido Previsto</p>
-              <p className={`text-xl font-sans font-bold ${selectedMonth.balance >= 0 ? 'text-gold' : 'text-[#fb7185]'} ${!showValues ? 'blur-[8px]' : ''}`}>
-                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(selectedMonth.balance)}
-              </p>
-            </div>
-          </div>
-
-          <div className="md:hidden p-3 bg-zinc-900/10">
-            <div className="grid grid-cols-2 gap-2">
-              {selectedMonthTransactions.length === 0 ? (
-                <div className="col-span-2 py-8 text-center text-zinc-600 text-[10px] uppercase tracking-widest font-bold">
-                  Nenhum lançamento previsto.
-                </div>
-              ) : (
-                selectedMonthTransactions.map((trx) => (
-                  <div key={trx.id} className="bg-[#1a1a1c] p-3 rounded-2xl border border-white/5 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[7px] text-zinc-500 font-bold uppercase tracking-widest">
-                        {trx.dueDate?.toDate ? format(trx.dueDate.toDate(), 'dd/MM') : '---'}
-                      </span>
-                      {trx.status === 'Pendente' && (
-                        <button
-                          onClick={() => handleMarkAsPaid(trx.id)}
-                          className="p-1 rounded-full bg-lime-vibrant/10 text-lime-vibrant active:scale-90 transition-all"
-                        >
-                          <Check size={10} />
-                        </button>
-                      )}
-                    </div>
-                    
-                    <div className="min-w-0">
-                      <p className="text-[10px] text-white font-black uppercase truncate leading-tight">{trx.description}</p>
-                      <p className={`text-[12px] font-sans font-black mt-1 ${trx.type === 'Receita' ? 'text-lime-vibrant' : 'text-white'} ${!showValues ? 'blur-md opacity-20' : ''}`}>
-                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(trx.value)}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                      <span className={`text-[7px] px-1.5 py-0.5 rounded font-black uppercase ${
-                        trx.status === 'Pago' ? 'bg-lime-vibrant/10 text-lime-vibrant' : 'bg-gold/10 text-gold'
-                      }`}>
-                        {trx.status}
-                      </span>
-                      {trx.installmentsTotal > 1 && (
-                        <span className="text-[7px] text-zinc-600 font-bold uppercase">
-                          {trx.installmentCurrent}/{trx.installmentsTotal}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-zinc-900/50">
-                  <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark">Data</th>
-                  <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark">Descrição</th>
-                  <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark">Categoria</th>
-                  <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark">Parcela</th>
-                  <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark">Status</th>
-                  <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark text-right">Valor</th>
-                  <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark text-center">Pago</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {selectedMonthTransactions.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center text-zinc-600 text-xs uppercase tracking-widest font-medium italic">
-                      Nenhum lançamento previsto para este mês.
-                    </td>
-                  </tr>
-                ) : (
-                  selectedMonthTransactions.map((trx) => (
-                    <tr key={trx.id} className="hover:bg-white/[0.02] transition-colors group">
-                      <td className="px-6 py-4 text-[11px] text-zinc-400 font-medium">
-                        {trx.dueDate?.toDate ? format(trx.dueDate.toDate(), 'dd/MM/yyyy') : '---'}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-[11px] text-white font-medium group-hover:text-gold transition-colors uppercase">{trx.description}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 border border-white/5 uppercase font-bold tracking-tighter">
-                          {trx.category}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-[10px] text-zinc-500 font-bold">
-                        {trx.installmentCurrent && trx.installmentsTotal 
-                          ? `${trx.installmentCurrent}/${trx.installmentsTotal}`
-                          : '--'}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded ${
-                          trx.status === 'Pago' ? 'bg-[#a3e635]/10 text-[#a3e635]' : 'bg-gold/10 text-gold'
-                        }`}>
-                          {trx.status}
-                        </span>
-                      </td>
-                      <td className={`px-6 py-4 text-right text-xs font-sans font-bold ${
-                        trx.type === 'Receita' ? 'text-[#a3e635]' : 'text-[#fb7185]'
-                      } ${!showValues ? 'blur-[4px]' : ''}`}>
-                        {trx.type === 'Receita' ? '+' : '-'} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(trx.value)}
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        {trx.status === 'Pendente' && (
-                          <button
-                            onClick={() => handleMarkAsPaid(trx.id)}
-                            className="p-1.5 rounded-full bg-[#a3e635]/10 text-[#a3e635] hover:bg-[#a3e635] hover:text-black transition-all group/btn"
-                            title="Confirmar como Pago"
-                          >
-                            <Check size={14} />
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-          
-          <div className="p-6 bg-zinc-900/20 border-t border-border-dark flex flex-wrap gap-8">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-[#a3e635]/10 border border-[#a3e635]/20">
-                <TrendingUp size={14} className="text-[#a3e635]" />
-              </div>
-              <div>
-                <p className="text-[9px] uppercase text-zinc-500 font-bold">Total Receitas</p>
-                <p className={`text-sm text-white font-sans font-bold ${!showValues ? 'blur-[4px]' : ''}`}>
-                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(selectedMonth.totalIn)}
-                </p>
-              </div>
-            </div>
+      {/* DETAILED VIEW POPUP MODAL */}
+      <AnimatePresence>
+        {selectedMonth && (
+          <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center bg-[#000000]/80 backdrop-blur-md p-0 md:p-4">
+            {/* Backdrop Click area to close */}
+            <div className="absolute inset-0" onClick={() => setSelectedMonth(null)} />
             
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-[#fb7185]/10 border border-[#fb7185]/20">
-                <TrendingDown size={14} className="text-[#fb7185]" />
+            <motion.div
+              initial={{ opacity: 0, y: 100, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 100, scale: 0.98 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="bg-card-bg w-full max-w-4xl rounded-t-[32px] md:rounded-3xl border-t md:border border-border-dark shadow-2xl overflow-hidden max-h-[92vh] flex flex-col relative z-10"
+            >
+              {/* Mobile Drag Indicator */}
+              <div className="md:hidden flex justify-center py-3">
+                <div className="w-10 h-1 bg-white/10 rounded-full" />
               </div>
-              <div>
-                <p className="text-[9px] uppercase text-zinc-500 font-bold">Total Despesas</p>
-                <p className={`text-sm text-white font-sans font-bold ${!showValues ? 'blur-[4px]' : ''}`}>
-                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(selectedMonth.totalOut)}
-                </p>
+
+              <div className="p-6 pt-2 md:pt-6 border-b border-border-dark flex items-center justify-between bg-[#161618]">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center border border-gold/20">
+                    <Calendar size={18} className="text-gold" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-white uppercase tracking-wider">Detalhamento Mensal</h4>
+                    <p className="text-[10px] text-zinc-500 uppercase tracking-widest">{selectedMonth.monthName} {selectedMonth.year}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-6">
+                  <div className="hidden sm:block text-right">
+                    <p className="text-[9px] uppercase text-zinc-500 font-bold mb-1 tracking-tighter">Saldo Líquido Previsto</p>
+                    <p className={`text-xl font-sans font-bold ${selectedMonth.balance >= 0 ? 'text-gold' : 'text-[#fb7185]'} ${!showValues ? 'blur-[8px]' : ''}`}>
+                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(selectedMonth.balance)}
+                    </p>
+                  </div>
+                  <button 
+                    onClick={() => setSelectedMonth(null)} 
+                    className="p-2 hover:bg-zinc-800 rounded-full transition-all text-zinc-500 active:scale-90"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
               </div>
-            </div>
+
+              <div className="overflow-y-auto flex-1">
+                <div className="md:hidden p-3 bg-zinc-900/10">
+                  <div className="grid grid-cols-2 gap-2">
+                    {selectedMonthTransactions.length === 0 ? (
+                      <div className="col-span-2 py-8 text-center text-zinc-600 text-[10px] uppercase tracking-widest font-bold">
+                        Nenhum lançamento previsto.
+                      </div>
+                    ) : (
+                      selectedMonthTransactions.map((trx) => (
+                        <div key={trx.id} className="bg-[#1a1a1c] p-3 rounded-2xl border border-white/5 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[7px] text-zinc-500 font-bold uppercase tracking-widest">
+                              {trx.dueDate?.toDate ? format(trx.dueDate.toDate(), 'dd/MM') : '---'}
+                            </span>
+                            {trx.status === 'Pendente' && (
+                              <button
+                                onClick={() => handleMarkAsPaid(trx.id)}
+                                className="p-1 rounded-full bg-lime-vibrant/10 text-lime-vibrant active:scale-90 transition-all"
+                              >
+                                <Check size={10} />
+                              </button>
+                            )}
+                          </div>
+                          
+                          <div className="min-w-0">
+                            <p className="text-[10px] text-white font-black uppercase truncate leading-tight">{trx.description}</p>
+                            <p className={`text-[12px] font-sans font-black mt-1 ${trx.type === 'Receita' ? 'text-lime-vibrant' : 'text-white'} ${!showValues ? 'blur-md opacity-20' : ''}`}>
+                              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(trx.value)}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                            <span className={`text-[7px] px-1.5 py-0.5 rounded font-black uppercase ${
+                              trx.status === 'Pago' ? 'bg-lime-vibrant/10 text-lime-vibrant' : 'bg-gold/10 text-gold'
+                            }`}>
+                              {trx.status}
+                            </span>
+                            {trx.installmentsTotal > 1 && (
+                              <span className="text-[7px] text-zinc-600 font-bold uppercase">
+                                {trx.installmentCurrent}/{trx.installmentsTotal}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                <div className="hidden md:block">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-zinc-900/50">
+                        <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark">Data</th>
+                        <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark">Descrição</th>
+                        <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark">Categoria</th>
+                        <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark">Parcela</th>
+                        <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark">Status</th>
+                        <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark text-right">Valor</th>
+                        <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-zinc-500 font-bold border-b border-border-dark text-center">Pago</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {selectedMonthTransactions.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="px-6 py-12 text-center text-zinc-600 text-xs uppercase tracking-widest font-medium italic">
+                            Nenhum lançamento previsto para este mês.
+                          </td>
+                        </tr>
+                      ) : (
+                        selectedMonthTransactions.map((trx) => (
+                          <tr key={trx.id} className="hover:bg-white/[0.02] transition-colors group">
+                            <td className="px-6 py-4 text-[11px] text-zinc-400 font-medium">
+                              {trx.dueDate?.toDate ? format(trx.dueDate.toDate(), 'dd/MM/yyyy') : '---'}
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className="text-[11px] text-white font-medium group-hover:text-gold transition-colors uppercase">{trx.description}</span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 border border-white/5 uppercase font-bold tracking-tighter">
+                                {trx.category}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-[10px] text-zinc-500 font-bold">
+                              {trx.installmentCurrent && trx.installmentsTotal 
+                                ? `${trx.installmentCurrent}/${trx.installmentsTotal}`
+                                : '--'}
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded ${
+                                trx.status === 'Pago' ? 'bg-[#a3e635]/10 text-[#a3e635]' : 'bg-gold/10 text-gold'
+                              }`}>
+                                {trx.status}
+                              </span>
+                            </td>
+                            <td className={`px-6 py-4 text-right text-xs font-sans font-bold ${
+                              trx.type === 'Receita' ? 'text-[#a3e635]' : 'text-[#fb7185]'
+                            } ${!showValues ? 'blur-[4px]' : ''}`}>
+                              {trx.type === 'Receita' ? '+' : '-'} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(trx.value)}
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              {trx.status === 'Pendente' && (
+                                <button
+                                  onClick={() => handleMarkAsPaid(trx.id)}
+                                  className="p-1.5 rounded-full bg-[#a3e635]/10 text-[#a3e635] hover:bg-[#a3e635] hover:text-black transition-all group/btn"
+                                  title="Confirmar como Pago"
+                                >
+                                  <Check size={14} />
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              
+              <div className="p-6 bg-zinc-900/20 border-t border-border-dark flex flex-wrap gap-8">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-[#a3e635]/10 border border-[#a3e635]/20">
+                    <TrendingUp size={14} className="text-[#a3e635]" />
+                  </div>
+                  <div>
+                    <p className="text-[9px] uppercase text-zinc-500 font-bold">Total Receitas</p>
+                    <p className={`text-sm text-white font-sans font-bold ${!showValues ? 'blur-[4px]' : ''}`}>
+                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(selectedMonth.totalIn)}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-[#fb7185]/10 border border-[#fb7185]/20">
+                    <TrendingDown size={14} className="text-[#fb7185]" />
+                  </div>
+                  <div>
+                    <p className="text-[9px] uppercase text-zinc-500 font-bold">Total Despesas</p>
+                    <p className={`text-sm text-white font-sans font-bold ${!showValues ? 'blur-[4px]' : ''}`}>
+                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(selectedMonth.totalOut)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           </div>
-        </motion.div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 }
