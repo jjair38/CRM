@@ -111,7 +111,7 @@ export function SummaryCards({ user, showValues = true }: { user: any, showValue
         <p className="text-[10px] uppercase tracking-widest text-gold font-bold">{currentMonthName} {currentYear}</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {cards.map((card, index) => {
           const Icon = card.icon;
           return (
@@ -120,16 +120,16 @@ export function SummaryCards({ user, showValues = true }: { user: any, showValue
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className="bg-card-bg p-8 rounded-3xl border border-white/5 shadow-2xl flex flex-col justify-between h-40 group hover:border-gold/20 transition-all duration-500"
+              className="bg-card-bg p-5 md:p-8 rounded-[24px] md:rounded-3xl border border-white/5 shadow-2xl flex flex-col justify-between h-32 md:h-40 group hover:border-gold/20 transition-all duration-500"
             >
               <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 font-bold group-hover:text-gold/60 transition-colors duration-500">{card.label}</span>
-                <div className={`p-2 rounded-xl transition-all duration-500 group-hover:scale-110 ${card.bg}`}>
-                  <Icon size={16} className={card.color} />
+                <span className="text-[8px] md:text-[10px] uppercase tracking-[0.2em] md:tracking-[0.3em] text-zinc-500 font-bold group-hover:text-gold/60 transition-colors duration-500">{card.label}</span>
+                <div className={`p-1.5 md:p-2 rounded-xl transition-all duration-500 group-hover:scale-110 ${card.bg}`}>
+                  <Icon size={14} className={card.color} />
                 </div>
               </div>
               <div className="flex flex-col">
-                <span className={`text-3xl font-sans font-bold tracking-tight transition-all duration-700 ${card.color} ${!showValues ? 'blur-lg select-none opacity-20' : 'opacity-100'}`}>
+                <span className={`text-xl md:text-3xl font-sans font-bold tracking-tight transition-all duration-700 ${card.color} ${!showValues ? 'blur-lg select-none opacity-20' : 'opacity-100'}`}>
                   {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(card.value)}
                 </span>
               </div>
@@ -142,14 +142,14 @@ export function SummaryCards({ user, showValues = true }: { user: any, showValue
       <motion.div 
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-card-bg p-6 rounded border border-border-dark shadow-xl"
+        className="bg-card-bg p-4 md:p-6 rounded-3xl border border-border-dark shadow-xl"
       >
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 md:px-2">
           <div className="flex flex-col">
-            <span className="text-[10px] uppercase tracking-[0.2em] opacity-50 font-bold mb-1">Comprometimento de Renda</span>
-            <span className="text-xs text-zinc-400">Suas despesas ocupam <span className={budgetPercentage > 80 ? 'text-red-400 font-bold' : 'text-gold font-bold'}>{budgetPercentage.toFixed(1)}%</span> do seu faturamento total.</span>
+            <span className="text-[8px] md:text-[10px] uppercase tracking-[0.2em] opacity-50 font-black mb-1">Comprometimento de Renda</span>
+            <span className="text-[10px] md:text-xs text-zinc-500 leading-tight">Suas despesas ocupam <span className={budgetPercentage > 80 ? 'text-red-400 font-black' : 'text-gold font-black'}>{budgetPercentage.toFixed(1)}%</span> do faturamento.</span>
           </div>
-          <span className="text-xl font-serif text-white">{budgetPercentage.toFixed(0)}%</span>
+          <span className="text-lg md:text-xl font-sans font-black text-white">{budgetPercentage.toFixed(0)}%</span>
         </div>
         <div className="w-full h-2 bg-zinc-900 rounded-full overflow-hidden border border-white/5">
           <motion.div 

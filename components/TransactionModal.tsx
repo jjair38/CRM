@@ -182,14 +182,23 @@ export function TransactionModal({ isOpen, onClose, user, initialData }: Transac
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#000000]/80 backdrop-blur-md">
+        <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center bg-[#000000]/80 backdrop-blur-md">
+          {/* Backdrop Click area to close */}
+          <div className="absolute inset-0" onClick={onClose} />
+          
           <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            className="bg-card-bg w-full max-w-md rounded-3xl border border-border-dark shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+            initial={{ opacity: 0, y: 100, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 100, scale: 0.98 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="bg-card-bg w-full max-w-md rounded-t-[32px] md:rounded-3xl border-t md:border border-border-dark shadow-2xl overflow-hidden max-h-[92vh] flex flex-col relative z-10"
           >
-            <div className="p-6 border-b border-border-dark flex items-center justify-between bg-[#161618]">
+            {/* Mobile Drag Indicator */}
+            <div className="md:hidden flex justify-center py-3">
+              <div className="w-10 h-1 bg-white/10 rounded-full" />
+            </div>
+
+            <div className="p-6 pt-2 md:pt-6 border-b border-border-dark flex items-center justify-between bg-[#161618]">
               <h3 className="text-lg font-bold text-white font-sans uppercase tracking-widest">
                 {initialData ? 'Editar Lançamento' : 'Novo Lançamento'}
               </h3>

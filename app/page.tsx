@@ -169,7 +169,7 @@ export default function Home() {
       </div>
 
       {/* Bottom Navigation for Mobile */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0c0c0d] border-t border-border-dark z-40 px-6 pb-6 pt-3 flex items-center justify-between">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0c0c0d]/80 backdrop-blur-xl border-t border-white/5 z-40 px-4 pb-8 pt-4 flex items-center justify-between">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -177,17 +177,30 @@ export default function Home() {
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id as any)}
-              className={`flex flex-col items-center gap-1.5 transition-all ${isActive ? 'text-gold' : 'text-zinc-500'}`}
+              className={`flex flex-col items-center gap-1 transition-all active:scale-90 ${isActive ? 'text-gold' : 'text-zinc-600'}`}
             >
-              <div className={`p-2 rounded-xl transition-all ${isActive ? 'bg-gold/10' : ''}`}>
-                <Icon size={20} />
+              <div className={`p-2 rounded-2xl transition-all ${isActive ? 'bg-gold/10' : ''}`}>
+                <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
               </div>
-              <span className={`text-[9px] uppercase tracking-wider font-bold ${isActive ? 'opacity-100' : 'opacity-60'}`}>
+              <span className={`text-[10px] uppercase tracking-widest font-black ${isActive ? 'opacity-100' : 'opacity-40'}`}>
                 {item.label.split(' ')[0]}
               </span>
             </button>
           );
         })}
+        
+        {/* Toggle Sidebar Button for Mobile */}
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="flex flex-col items-center gap-1 transition-all active:scale-90 text-zinc-600"
+        >
+          <div className="p-2 rounded-2xl">
+            <Menu size={22} />
+          </div>
+          <span className="text-[10px] uppercase tracking-widest font-black opacity-40">
+            Mais
+          </span>
+        </button>
       </div>
 
       {/* Floating Action Button for Mobile - Moved higher to not block bottom nav if needed, but actually fixed bottom right is fine if padded */}
@@ -204,9 +217,19 @@ export default function Home() {
         fixed inset-0 z-50 md:relative md:flex md:w-64 flex-col bg-card-bg border-r border-border-dark transition-transform duration-300
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
-        <div className="flex items-center justify-between p-6 md:hidden border-b border-border-dark">
-          <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-white">Configurações</span>
-          <button onClick={() => setSidebarOpen(false)} className="text-zinc-500"><X size={20} /></button>
+        <div className="flex items-center justify-between p-6 md:hidden border-b border-white/5 bg-[#161618]">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gold rounded flex items-center justify-center">
+              <Wallet className="text-black w-4 h-4" />
+            </div>
+            <span className="text-[10px] uppercase tracking-[0.2em] font-black text-white">Menu Elite</span>
+          </div>
+          <button 
+            onClick={() => setSidebarOpen(false)} 
+            className="w-10 h-10 flex items-center justify-center bg-zinc-900 rounded-full text-zinc-500 active:scale-90 transition-all"
+          >
+            <X size={20} />
+          </button>
         </div>
         <div className="p-6 hidden md:flex flex-col mb-2 border-b border-border-dark">
           <div className="flex items-center gap-3 mb-1">

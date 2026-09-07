@@ -190,8 +190,8 @@ export function TransactionsList({ user, compact = false, onEdit, showValues = t
         </div>
       ) : (
         <>
-          {/* Card View for Mobile */}
-          <div className="grid grid-cols-1 gap-4 md:hidden">
+          {/* Card View for Mobile - Compact 2-Column Grid */}
+          <div className="grid grid-cols-2 gap-2 md:hidden px-1">
             {listToRender.map((t) => {
               const Icon = CATEGORY_ICONS[t.category] || (t.type === 'Receita' ? Plus : Receipt);
               const actualStatus = getTransactionStatus(t);
@@ -199,53 +199,55 @@ export function TransactionsList({ user, compact = false, onEdit, showValues = t
                 <div 
                   key={t.id} 
                   onClick={() => onEdit?.(t)}
-                  className={`bg-card-bg p-6 rounded-3xl border border-white/5 shadow-2xl active:scale-[0.98] transition-all duration-500 hover:border-gold/20 group ${deletingId === t.id ? 'opacity-30 pointer-events-none' : ''}`}
+                  className={`bg-card-bg p-4 rounded-[24px] border border-white/5 shadow-xl active:scale-[0.96] transition-all duration-300 hover:border-gold/20 flex flex-col justify-between group ${deletingId === t.id ? 'opacity-30 pointer-events-none' : ''}`}
                 >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 ${t.type === 'Receita' ? 'bg-lime-vibrant/10 text-lime-vibrant shadow-lg shadow-lime-vibrant/5' : 'bg-rose-soft/10 text-rose-soft shadow-lg shadow-rose-soft/5'}`}>
-                        <Icon size={20} />
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 ${t.type === 'Receita' ? 'bg-lime-vibrant/10 text-lime-vibrant' : 'bg-rose-soft/10 text-rose-soft'}`}>
+                        <Icon size={16} />
                       </div>
-                      <div>
-                        <h4 className="text-white font-medium text-base group-hover:text-gold transition-colors duration-500">{t.description}</h4>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-bold">{t.category}</p>
-                          {t.installmentsTotal > 1 && (
-                            <span className="text-[10px] text-gold/40 font-bold uppercase tracking-tighter">
-                              • {t.installmentCurrent}/{t.installmentsTotal}
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                      <p className="text-[8px] uppercase tracking-widest text-zinc-600 font-black">{t.dueDate?.toDate ? format(t.dueDate.toDate(), "dd MMM", { locale: ptBR }) : '---'}</p>
                     </div>
-                    <div className="text-right">
-                      <p className={`text-lg font-sans font-bold ${t.type === 'Receita' ? 'text-lime-vibrant' : 'text-white'} ${!showValues ? 'blur-lg select-none opacity-20' : 'opacity-100'}`}>
-                        {t.type === 'Receita' ? '+' : '-'} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(t.value)}
-                      </p>
-                      <p className="text-[10px] uppercase tracking-widest text-zinc-600 font-bold mt-1">{t.dueDate?.toDate ? format(t.dueDate.toDate(), "dd MMM yyyy", { locale: ptBR }) : '---'}</p>
+
+                    <div className="min-w-0">
+                      <h4 className="text-white font-black text-[11px] leading-tight truncate group-hover:text-gold transition-colors duration-500 uppercase">{t.description}</h4>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <p className="text-[7px] uppercase tracking-tighter text-zinc-500 font-bold truncate">{t.category}</p>
+                        {t.installmentsTotal > 1 && (
+                          <span className="text-[7px] text-gold/30 font-black">
+                            {t.installmentCurrent}/{t.installmentsTotal}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                    <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] uppercase font-bold border transition-all duration-500 ${
-                      actualStatus === 'Pago' ? 'bg-lime-vibrant/10 text-lime-vibrant border-lime-vibrant/20' : 
-                      actualStatus === 'Pendente' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 
-                      'bg-rose-soft/10 text-rose-soft border-rose-soft/20'
-                    }`}>
-                      <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${
-                        actualStatus === 'Pago' ? 'bg-lime-vibrant' : 
-                        actualStatus === 'Pendente' ? 'bg-amber-500' : 'bg-rose-soft'
-                      }`}></div>
-                      {actualStatus}
-                    </div>
-                    <div className="flex items-center gap-2">
+
+                  <div className="mt-4 pt-3 border-t border-white/5 space-y-2">
+                    <p className={`text-[13px] font-sans font-black ${t.type === 'Receita' ? 'text-lime-vibrant' : 'text-white'} ${!showValues ? 'blur-md select-none opacity-20' : 'opacity-100'}`}>
+                      {t.type === 'Receita' ? '+' : '-'} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(t.value)}
+                    </p>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[7px] uppercase font-black border transition-all duration-500 ${
+                        actualStatus === 'Pago' ? 'bg-lime-vibrant/10 text-lime-vibrant border-lime-vibrant/20' : 
+                        actualStatus === 'Pendente' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 
+                        'bg-rose-soft/10 text-rose-soft border-rose-soft/20'
+                      }`}>
+                        <div className={`w-1 h-1 rounded-full ${
+                          actualStatus === 'Pago' ? 'bg-lime-vibrant' : 
+                          actualStatus === 'Pendente' ? 'bg-amber-500' : 'bg-rose-soft'
+                        }`}></div>
+                        {actualStatus}
+                      </div>
+                      
                       <button 
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDelete(t.id);
                         }}
-                        className="text-zinc-700 hover:text-rose-soft p-2 transition-colors duration-300"
+                        className="text-zinc-800 hover:text-rose-soft p-1 transition-colors duration-300"
                       >
-                        {deletingId === t.id ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
+                        {deletingId === t.id ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
                       </button>
                     </div>
                   </div>

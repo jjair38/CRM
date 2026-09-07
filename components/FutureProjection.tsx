@@ -138,7 +138,7 @@ export function FutureProjection({ user, showValues = true }: { user: any, showV
           <p className="text-[9px] uppercase tracking-widest text-zinc-500">Clique em um mês para detalhar</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {projections.map((proj, index) => (
             <motion.div
               key={`${proj.monthName}-${proj.year}`}
@@ -146,53 +146,53 @@ export function FutureProjection({ user, showValues = true }: { user: any, showV
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
               onClick={() => setSelectedMonth(proj)}
-              className={`p-6 rounded-3xl border cursor-pointer transition-all duration-500 group ${
+              className={`p-4 md:p-6 rounded-[28px] md:rounded-3xl border cursor-pointer transition-all duration-500 group ${
                 selectedMonth?.monthName === proj.monthName && selectedMonth?.year === proj.year
                 ? 'bg-gold/10 border-gold/40 shadow-2xl shadow-gold/5'
                 : 'bg-card-bg border-white/5 hover:border-gold/20'
               }`}
             >
-              <div className="flex items-center justify-between mb-6">
-                <span className={`text-[10px] uppercase tracking-[0.3em] font-bold transition-colors duration-500 ${
+              <div className="flex items-center justify-between mb-3 md:mb-6">
+                <span className={`text-[8px] md:text-[10px] uppercase tracking-[0.2em] md:tracking-[0.3em] font-bold transition-colors duration-500 ${
                   selectedMonth?.monthName === proj.monthName && selectedMonth?.year === proj.year
                   ? 'text-gold'
                   : 'text-zinc-500 group-hover:text-gold/60'
                 }`}>
                   {proj.monthName} <span className="opacity-20">{proj.year}</span>
                 </span>
-                <div className={`p-1.5 rounded-lg transition-all duration-500 ${
+                <div className={`p-1 md:p-1.5 rounded-lg transition-all duration-500 ${
                   selectedMonth?.monthName === proj.monthName && selectedMonth?.year === proj.year
                   ? 'bg-gold text-black shadow-lg shadow-gold/20'
                   : 'bg-zinc-900 text-zinc-600 group-hover:bg-gold/10 group-hover:text-gold'
                 }`}>
-                  <ArrowRight size={12} />
+                  <ArrowRight size={10} className="md:w-3 md:h-3" />
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-2 md:space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp size={14} className="text-lime-vibrant opacity-40" />
-                    <span className="text-[10px] uppercase tracking-wider text-zinc-500">Entradas</span>
+                  <div className="flex items-center gap-1.5 md:gap-2">
+                    <TrendingUp size={12} className="text-lime-vibrant opacity-40 md:w-3.5 md:h-3.5" />
+                    <span className="text-[8px] md:text-[10px] uppercase tracking-wider text-zinc-500">Entradas</span>
                   </div>
-                  <span className={`text-sm font-medium text-white ${!showValues ? 'blur-[5px]' : ''}`}>
+                  <span className={`text-[11px] md:text-sm font-medium text-white ${!showValues ? 'blur-[5px]' : ''}`}>
                     {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proj.totalIn)}
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <TrendingDown size={14} className="text-rose-soft opacity-40" />
-                    <span className="text-[10px] uppercase tracking-wider text-zinc-500">Saídas</span>
+                  <div className="flex items-center gap-1.5 md:gap-2">
+                    <TrendingDown size={12} className="text-rose-soft opacity-40 md:w-3.5 md:h-3.5" />
+                    <span className="text-[8px] md:text-[10px] uppercase tracking-wider text-zinc-500">Saídas</span>
                   </div>
-                  <span className={`text-sm font-medium text-white ${!showValues ? 'blur-[5px]' : ''}`}>
+                  <span className={`text-[11px] md:text-sm font-medium text-white ${!showValues ? 'blur-[5px]' : ''}`}>
                     {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proj.totalOut)}
                   </span>
                 </div>
 
-                <div className="pt-4 border-t border-white/5 flex items-center justify-between">
-                  <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-widest">Saldo</span>
-                  <span className={`text-lg font-sans font-bold ${proj.balance >= 0 ? 'text-gold' : 'text-rose-soft'} ${!showValues ? 'blur-[6px]' : ''}`}>
+                <div className="pt-2 md:pt-4 border-t border-white/5 flex items-center justify-between">
+                  <span className="text-[8px] md:text-[10px] uppercase font-bold text-zinc-500 tracking-widest">Saldo</span>
+                  <span className={`text-sm md:text-lg font-sans font-bold ${proj.balance >= 0 ? 'text-gold' : 'text-rose-soft'} ${!showValues ? 'blur-[6px]' : ''}`}>
                     {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proj.balance)}
                   </span>
                 </div>
@@ -228,7 +228,55 @@ export function FutureProjection({ user, showValues = true }: { user: any, showV
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="md:hidden p-3 bg-zinc-900/10">
+            <div className="grid grid-cols-2 gap-2">
+              {selectedMonthTransactions.length === 0 ? (
+                <div className="col-span-2 py-8 text-center text-zinc-600 text-[10px] uppercase tracking-widest font-bold">
+                  Nenhum lançamento previsto.
+                </div>
+              ) : (
+                selectedMonthTransactions.map((trx) => (
+                  <div key={trx.id} className="bg-[#1a1a1c] p-3 rounded-2xl border border-white/5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[7px] text-zinc-500 font-bold uppercase tracking-widest">
+                        {trx.dueDate?.toDate ? format(trx.dueDate.toDate(), 'dd/MM') : '---'}
+                      </span>
+                      {trx.status === 'Pendente' && (
+                        <button
+                          onClick={() => handleMarkAsPaid(trx.id)}
+                          className="p-1 rounded-full bg-lime-vibrant/10 text-lime-vibrant active:scale-90 transition-all"
+                        >
+                          <Check size={10} />
+                        </button>
+                      )}
+                    </div>
+                    
+                    <div className="min-w-0">
+                      <p className="text-[10px] text-white font-black uppercase truncate leading-tight">{trx.description}</p>
+                      <p className={`text-[12px] font-sans font-black mt-1 ${trx.type === 'Receita' ? 'text-lime-vibrant' : 'text-white'} ${!showValues ? 'blur-md opacity-20' : ''}`}>
+                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(trx.value)}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                      <span className={`text-[7px] px-1.5 py-0.5 rounded font-black uppercase ${
+                        trx.status === 'Pago' ? 'bg-lime-vibrant/10 text-lime-vibrant' : 'bg-gold/10 text-gold'
+                      }`}>
+                        {trx.status}
+                      </span>
+                      {trx.installmentsTotal > 1 && (
+                        <span className="text-[7px] text-zinc-600 font-bold uppercase">
+                          {trx.installmentCurrent}/{trx.installmentsTotal}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-zinc-900/50">
