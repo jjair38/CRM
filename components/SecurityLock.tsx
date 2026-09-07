@@ -157,10 +157,11 @@ export function SecurityLock({ onUnlock }: SecurityLockProps) {
           )}
 
           <button
-            onClick={() => {
+            onClick={async () => {
               localStorage.removeItem('biometric_security_enabled');
               localStorage.removeItem('device_auth_credential_id');
-              logout();
+              await logout();
+              window.location.reload(); // Garante que todos os estados sejam limpos
             }}
             className="w-full py-3 text-zinc-600 hover:text-zinc-400 transition-all uppercase text-[8px] tracking-[0.3em] font-bold flex items-center justify-center gap-2"
           >

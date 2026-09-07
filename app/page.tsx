@@ -180,10 +180,6 @@ export default function Home() {
     );
   }
 
-  if (isAppLocked) {
-    return <SecurityLock onUnlock={() => setIsAppLocked(false)} />;
-  }
-
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#080809] p-4 relative overflow-hidden">
@@ -221,6 +217,10 @@ export default function Home() {
         </motion.div>
       </div>
     );
+  }
+
+  if (isAppLocked) {
+    return <SecurityLock onUnlock={() => setIsAppLocked(false)} />;
   }
 
   const menuItems = [
