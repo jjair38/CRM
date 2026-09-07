@@ -19,7 +19,9 @@ import {
   Eye,
   EyeOff,
   RefreshCcw,
-  FileUp
+  FileUp,
+  Fingerprint,
+  Shield
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { db } from '@/lib/firebase';
@@ -48,6 +50,7 @@ import { UpcomingAlerts } from '@/components/UpcomingAlerts';
 import { PWAInstallButton } from '@/components/PWAInstallButton';
 import { CSVImport } from '@/components/CSVImport';
 import { FutureProjection } from '@/components/FutureProjection';
+import { SecurityLock } from '@/components/SecurityLock';
 
 export default function Home() {
   const { user, loading, signIn, logout } = useAuth();
@@ -74,6 +77,32 @@ export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<any>(null);
   const [showValues, setShowValues] = useState(true);
+  const [isAppLocked, setIsAppLocked] = useState(false);
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
+  const [isWebAuthnSupported, setIsWebAuthnSupported] = useState(false);
+
+  // Check for biometric security on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('biometric_security_enabled') === 'true';
+      setBiometricEnabled(saved);
+      if (saved) {
+        setIsAppLocked(true);
+      }
+      
+      // Check for WebAuthn support
+      if (window.PublicKeyCredential) {
+        window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()
+          .then(available => setIsWebAuthnSupported(available));
+      }
+    }
+  }, []);
+
+  const toggleBiometric = () => {
+    const newValue = !biometricEnabled;
+    setBiometricEnabled(newValue);
+    localStorage.setItem('biometric_security_enabled', String(newValue));
+  };
 
   const handleOpenNewModal = () => {
     setEditingTransaction(null);
@@ -96,10 +125,14 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-zinc-900"></div>
+      <div className="min-h-screen flex items-center justify-center bg-[#080809]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold shadow-2xl shadow-gold/20"></div>
       </div>
     );
+  }
+
+  if (isAppLocked) {
+    return <SecurityLock onUnlock={() => setIsAppLocked(false)} />;
   }
 
   if (!user) {
@@ -301,6 +334,21 @@ export default function Home() {
             <FileUp size={16} />
             Compartilhar App
           </button>
+
+          {isWebAuthnSupported && (
+            <button 
+              onClick={toggleBiometric}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded text-[11px] uppercase tracking-wider font-medium transition-all ${biometricEnabled ? 'text-gold' : 'text-zinc-500 hover:bg-zinc-900'}`}
+            >
+              <div className="flex items-center gap-3">
+                <Shield size={16} />
+                <span>Proteção Biométrica</span>
+              </div>
+              <div className={`w-8 h-4 rounded-full relative transition-colors ${biometricEnabled ? 'bg-gold' : 'bg-zinc-800'}`}>
+                <div className={`absolute top-0.5 w-3 h-3 bg-black rounded-full transition-all ${biometricEnabled ? 'left-4.5' : 'left-0.5'}`} />
+              </div>
+            </button>
+          )}
           
           <div className="pt-4 mt-4 border-t border-white/5 space-y-4 px-4">
             <span className="text-[9px] uppercase tracking-[0.3em] text-zinc-600 font-bold px-4">Ações</span>
