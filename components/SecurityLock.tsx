@@ -12,28 +12,20 @@ export function SecurityLock({ onUnlock }: SecurityLockProps) {
   const [status, setStatus] = useState<'idle' | 'authenticating' | 'error' | 'success'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
-  const handleAuthenticate = async () => {
+  const handleAuthenticate = React.useCallback(async () => {
     setStatus('authenticating');
     setErrorMessage('');
 
     try {
-      // Basic check for WebAuthn support
       if (!window.PublicKeyCredential) {
         throw new Error('Biometria não suportada neste navegador.');
       }
 
-      // Check if platform authenticator is available
       const available = await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
       if (!available) {
-        // Fallback or error
         throw new Error('Autenticação biométrica não disponível no dispositivo.');
       }
 
-      // Trigger the authentication
-      // For a simple local lock, we can use a "get" request with a challenge
-      // Note: In a real production app, this would involve server-side validation
-      // But for a "local app lock", we are verifying the user is the device owner.
-      
       const challenge = new Uint8Array(32);
       window.crypto.getRandomValues(challenge);
 
@@ -42,25 +34,10 @@ export function SecurityLock({ onUnlock }: SecurityLockProps) {
           challenge: challenge,
           timeout: 60000,
           userVerification: 'required',
-          // Note: We use a generic request to trigger the device's default auth (PIN/FaceID/Fingerprint)
           allowCredentials: [] 
         }
       };
 
-      // Since we don't have a specific credential ID stored (it's a generic lock),
-      // some browsers might behave differently. A better way for "local lock" is often
-      // to just use the device's native lock if it's a PWA, but WebAuthn is the web standard.
-      
-      // Let's try a simpler approach for the local lock:
-      // If we haven't "registered", we might need a dummy registration or just rely on the UI.
-      // However, the most compatible way to trigger biometrics on mobile is a "get" with empty allowCredentials
-      // or a specific credential if we had one.
-      
-      // If it fails, we can just use a simple state check.
-      
-      // MOCK implementation for the prompt experience if the API is too restrictive for local-only:
-      // In many environments, WebAuthn requires a HTTPS domain and proper ceremony.
-      
       await navigator.credentials.get(options);
       
       setStatus('success');
@@ -71,15 +48,15 @@ export function SecurityLock({ onUnlock }: SecurityLockProps) {
       console.error('Erro na autenticação:', err);
       setStatus('error');
       setErrorMessage(err.message || 'Falha ao verificar identidade.');
-      
-      // If it's a "NotAllowedError" (user cancelled), we don't want to alert, just stay in idle/error
     }
-  };
+  }, [onUnlock]);
 
   useEffect(() => {
-    // Automatically trigger on mount if possible
-    handleAuthenticate();
-  }, []);
+    const timer = setTimeout(() => {
+      handleAuthenticate();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [handleAuthenticate]);
 
   return (
     <div className="fixed inset-0 z-[100] bg-[#080809] flex flex-col items-center justify-center p-6 text-center">
@@ -132,10 +109,10 @@ export function SecurityLock({ onUnlock }: SecurityLockProps) {
 
         <div className="space-y-4">
           <h2 className="text-2xl font-serif text-white tracking-widest uppercase">
-            Acesso <span className="text-gold font-bold">Protegido</span>
+            Aplicativo <span className="text-gold font-bold">Bloqueado</span>
           </h2>
           <p className="text-xs text-zinc-500 uppercase tracking-[0.2em] leading-relaxed">
-            {status === 'success' ? 'Identidade confirmada' : 'Aproxime sua biometria ou insira seu PIN para continuar'}
+            {status === 'success' ? 'Identidade confirmada' : 'Use o Face ID, Digital ou Código do seu celular'}
           </p>
         </div>
 
@@ -163,7 +140,7 @@ export function SecurityLock({ onUnlock }: SecurityLockProps) {
       </motion.div>
 
       <div className="absolute bottom-12 text-center w-full">
-        <p className="text-[9px] uppercase tracking-[0.4em] text-zinc-700 font-black">Elite Security Layer</p>
+        <p className="text-[9px] uppercase tracking-[0.4em] text-zinc-700 font-black">Segurança do Dispositivo</p>
       </div>
     </div>
   );

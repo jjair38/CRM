@@ -77,30 +77,31 @@ export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<any>(null);
   const [showValues, setShowValues] = useState(true);
-  const [isAppLocked, setIsAppLocked] = useState(false);
-  const [biometricEnabled, setBiometricEnabled] = useState(false);
-  const [isWebAuthnSupported, setIsWebAuthnSupported] = useState(false);
-
-  // Check for biometric security on mount
-  useEffect(() => {
+  const [isAppLocked, setIsAppLocked] = useState(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('biometric_security_enabled') === 'true';
-      setBiometricEnabled(saved);
-      if (saved) {
-        setIsAppLocked(true);
-      }
-      
-      // Check for WebAuthn support
-      if (window.PublicKeyCredential) {
-        window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()
-          .then(available => setIsWebAuthnSupported(available));
-      }
+      return localStorage.getItem('biometric_security_enabled') === 'true';
+    }
+    return false;
+  });
+  const [securityEnabled, setSecurityEnabled] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('biometric_security_enabled') === 'true';
+    }
+    return false;
+  });
+  const [isDeviceAuthSupported, setIsDeviceAuthSupported] = useState(false);
+
+  // Check for device authentication support on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.PublicKeyCredential) {
+      window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()
+        .then(available => setIsDeviceAuthSupported(available));
     }
   }, []);
 
-  const toggleBiometric = () => {
-    const newValue = !biometricEnabled;
-    setBiometricEnabled(newValue);
+  const toggleSecurity = () => {
+    const newValue = !securityEnabled;
+    setSecurityEnabled(newValue);
     localStorage.setItem('biometric_security_enabled', String(newValue));
   };
 
@@ -335,17 +336,17 @@ export default function Home() {
             Compartilhar App
           </button>
 
-          {isWebAuthnSupported && (
+          {isDeviceAuthSupported && (
             <button 
-              onClick={toggleBiometric}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded text-[11px] uppercase tracking-wider font-medium transition-all ${biometricEnabled ? 'text-gold' : 'text-zinc-500 hover:bg-zinc-900'}`}
+              onClick={toggleSecurity}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded text-[11px] uppercase tracking-wider font-medium transition-all ${securityEnabled ? 'text-gold' : 'text-zinc-500 hover:bg-zinc-900'}`}
             >
               <div className="flex items-center gap-3">
                 <Shield size={16} />
-                <span>Proteção Biométrica</span>
+                <span>Bloqueio do Celular</span>
               </div>
-              <div className={`w-8 h-4 rounded-full relative transition-colors ${biometricEnabled ? 'bg-gold' : 'bg-zinc-800'}`}>
-                <div className={`absolute top-0.5 w-3 h-3 bg-black rounded-full transition-all ${biometricEnabled ? 'left-4.5' : 'left-0.5'}`} />
+              <div className={`w-8 h-4 rounded-full relative transition-colors ${securityEnabled ? 'bg-gold' : 'bg-zinc-800'}`}>
+                <div className={`absolute top-0.5 w-3 h-3 bg-black rounded-full transition-all ${securityEnabled ? 'left-4.5' : 'left-0.5'}`} />
               </div>
             </button>
           )}
