@@ -174,8 +174,91 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#080809]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold shadow-2xl shadow-gold/20"></div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#080809] relative overflow-hidden">
+        {/* Background Ambient Glows */}
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-gold/5 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-gold/5 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
+        
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+          className="relative z-10 flex flex-col items-center"
+        >
+          {/* Animated Logo Container */}
+          <div className="relative w-24 h-24 mb-12">
+            {/* Outer Rotating Ring */}
+            <motion.div 
+              animate={{ rotate: 360 }}
+              transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+              className="absolute inset-0 rounded-[2rem] border-[0.5px] border-gold/20"
+            />
+            
+            {/* Inner Glowing Orbit */}
+            <motion.div 
+              animate={{ 
+                rotate: -360,
+                scale: [1, 1.05, 1]
+              }}
+              transition={{ 
+                rotate: { duration: 10, repeat: Infinity, ease: "linear" },
+                scale: { duration: 3, repeat: Infinity, ease: "easeInOut" }
+              }}
+              className="absolute inset-2 rounded-[1.5rem] border border-gold/40 shadow-[0_0_20px_rgba(212,175,55,0.15)]"
+            />
+            
+            <div className="absolute inset-0 flex items-center justify-center">
+              <motion.div
+                animate={{ 
+                  y: [0, -4, 0],
+                  filter: ["drop-shadow(0 0 0px rgba(212,175,55,0))", "drop-shadow(0 0 8px rgba(212,175,55,0.4))", "drop-shadow(0 0 0px rgba(212,175,55,0))"]
+                }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <TrendingUp className="text-gold w-12 h-12" strokeWidth={1.5} />
+              </motion.div>
+            </div>
+          </div>
+
+          {/* Brand Text with Staggered Entrance */}
+          <div className="text-center space-y-4">
+            <div className="overflow-hidden">
+              <motion.h1 
+                initial={{ y: 40 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+                className="text-3xl font-serif text-white tracking-[0.4em] uppercase"
+              >
+                CRM <span className="text-gold font-black">Financeiro</span>
+              </motion.h1>
+            </div>
+            
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1, duration: 1 }}
+              className="flex flex-col items-center gap-3"
+            >
+              <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
+              <p className="text-[10px] uppercase tracking-[0.6em] text-zinc-500 font-black">
+                Designer <span className="text-zinc-200">Jair</span>
+              </p>
+            </motion.div>
+          </div>
+        </motion.div>
+
+        {/* Minimalist Progress Indicator */}
+        <div className="absolute bottom-24 flex flex-col items-center gap-4">
+          <div className="w-40 h-[1px] bg-white/5 rounded-full overflow-hidden">
+            <motion.div 
+              initial={{ x: "-100%" }}
+              animate={{ x: "100%" }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              className="w-full h-full bg-gradient-to-r from-transparent via-gold/60 to-transparent"
+            />
+          </div>
+          <span className="text-[8px] uppercase tracking-[0.3em] text-zinc-700 font-bold animate-pulse">Sincronizando Dados</span>
+        </div>
       </div>
     );
   }
