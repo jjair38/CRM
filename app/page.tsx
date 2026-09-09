@@ -51,6 +51,9 @@ import { PWAInstallButton } from '@/components/PWAInstallButton';
 import { CSVImport } from '@/components/CSVImport';
 import { FutureProjection } from '@/components/FutureProjection';
 import { SecurityLock } from '@/components/SecurityLock';
+import { Toast, ToastType } from '@/components/Toast';
+import { addDays, startOfDay, isBefore } from 'date-fns';
+import { getDocs } from 'firebase/firestore';
 
 export default function Home() {
   const { user, loading, signIn, logout } = useAuth();
@@ -90,6 +93,52 @@ export default function Home() {
     return false;
   });
   const [isDeviceAuthSupported, setIsDeviceAuthSupported] = useState(false);
+  const [toastConfig, setToastConfig] = useState<{ isVisible: boolean; message: string; type: ToastType }>({
+    isVisible: false,
+    message: '',
+    type: 'info'
+  });
+  const hasCheckedUpcoming = React.useRef(false);
+
+  // Check for upcoming bills on login
+  useEffect(() => {
+    if (user && !hasCheckedUpcoming.current) {
+      const checkUpcomingBills = async () => {
+        try {
+          const today = startOfDay(new Date());
+          const threeDaysFromNow = addDays(today, 3);
+          
+          const q = query(
+            collection(db, 'transactions'),
+            where('userId', '==', user.uid),
+            where('status', '==', 'Pendente'),
+            where('type', '==', 'Despesa')
+          );
+          
+          const snapshot = await getDocs(q);
+          const upcomingCount = snapshot.docs.filter((doc) => {
+            const data = doc.data();
+            if (!data.dueDate?.toDate) return false;
+            const dueDate = startOfDay(data.dueDate.toDate());
+            return isBefore(dueDate, addDays(threeDaysFromNow, 1));
+          }).length;
+
+          if (upcomingCount > 0) {
+            setToastConfig({
+              isVisible: true,
+              message: `Atenção: Você tem ${upcomingCount} ${upcomingCount === 1 ? 'conta' : 'contas'} vencendo nos próximos 3 dias (ou já vencidas).`,
+              type: 'warning'
+            });
+          }
+          hasCheckedUpcoming.current = true;
+        } catch (error) {
+          console.error('Erro ao verificar contas próximas:', error);
+        }
+      };
+
+      checkUpcomingBills();
+    }
+  }, [user]);
 
   // Check for device authentication support on mount
   useEffect(() => {
@@ -314,6 +363,12 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-dark-bg flex flex-col md:flex-row text-[#d1d1d1]">
+      <Toast 
+        isVisible={toastConfig.isVisible} 
+        message={toastConfig.message} 
+        type={toastConfig.type} 
+        onClose={() => setToastConfig(prev => ({ ...prev, isVisible: false }))} 
+      />
       <TransactionModal 
         isOpen={isModalOpen} 
         onClose={handleCloseModal} 
