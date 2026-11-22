@@ -13,10 +13,7 @@ import {
   AlertTriangle,
   ArrowUpRight,
   Plus,
-  Layers,
-  Search,
-  ChevronDown,
-  ChevronUp
+  Layers
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import {
@@ -34,7 +31,6 @@ import { ptBR } from 'date-fns/locale';
 type PeriodFilter = 'month' | '6m' | 'year' | 'all';
 type GroupByMode = 'description' | 'category';
 type TypeFilter = 'Despesa' | 'Receita';
-type BreakdownTypeFilter = 'Todos' | 'Despesa' | 'Receita';
 
 interface TransactionItem {
   id: string;
@@ -100,9 +96,6 @@ export function FinancialDashboard({
   const [period, setPeriod] = useState<PeriodFilter>('6m');
   const [groupBy, setGroupBy] = useState<GroupByMode>('description');
   const [chartTypeFilter, setChartTypeFilter] = useState<TypeFilter>('Despesa');
-  const [tableTypeFilter, setTableTypeFilter] = useState<BreakdownTypeFilter>('Todos');
-  const [descriptionSearch, setDescriptionSearch] = useState('');
-  const [showAllDescriptions, setShowAllDescriptions] = useState(false);
   const [activeSlice, setActiveSlice] = useState<string | null>(null);
 
   useEffect(() => {
@@ -166,22 +159,6 @@ export function FinancialDashboard({
     // Map for Donut chart (grouped by Description or Category based on toggle)
     const chartGroupMap: Record<string, { label: string; value: number; count: number }> = {};
 
-    // Map for detailed "Separação por Descrição de Lançamento" table
-    const descriptionBreakdownMap: Record<
-      string,
-      {
-        key: string;
-        description: string;
-        type: 'Receita' | 'Despesa';
-        category: string;
-        count: number;
-        totalValue: number;
-        paidValue: number;
-        openValue: number;
-        overdueCount: number;
-      }
-    > = {};
-
     // Map for Top Expense Item (KPI 4)
     const topExpenseMap: Record<string, { label: string; value: number }> = {};
 
@@ -225,34 +202,6 @@ export function FinancialDashboard({
         chartGroupMap[groupKey].value += val;
         chartGroupMap[groupKey].count += 1;
       }
-
-      // Description breakdown aggregation (separated by type + normalized description)
-      const trxType: 'Receita' | 'Despesa' = isIncome ? 'Receita' : 'Despesa';
-      const descKey = `${trxType}::${descLabel.toLowerCase()}`;
-      if (!descriptionBreakdownMap[descKey]) {
-        descriptionBreakdownMap[descKey] = {
-          key: descKey,
-          description: descLabel,
-          type: trxType,
-          category: catLabel,
-          count: 0,
-          totalValue: 0,
-          paidValue: 0,
-          openValue: 0,
-          overdueCount: 0
-        };
-      }
-      const entry = descriptionBreakdownMap[descKey];
-      entry.count += 1;
-      entry.totalValue += val;
-      if (effStatus === 'Pago') {
-        entry.paidValue += val;
-      } else {
-        entry.openValue += val;
-        if (effStatus === 'Atrasado') {
-          entry.overdueCount += 1;
-        }
-      }
     });
 
     const netBalance = totalIn - totalOut;
@@ -287,10 +236,6 @@ export function FinancialDashboard({
       });
     }
 
-    const byDescriptionList = Object.values(descriptionBreakdownMap).sort(
-      (a, b) => b.totalValue - a.totalValue
-    );
-
     const totalStatusValue = paidValue + pendingValue + overdueValue;
 
     return {
@@ -315,26 +260,9 @@ export function FinancialDashboard({
           }
         : null,
       groupSlices,
-      totalGroupValue,
-      byDescriptionList
+      totalGroupValue
     };
   }, [transactions, period, groupBy, chartTypeFilter]);
-
-  const filteredDescriptionRows = useMemo(() => {
-    const q = descriptionSearch.trim().toLowerCase();
-    return analytics.byDescriptionList.filter((row) => {
-      const matchesType = tableTypeFilter === 'Todos' || row.type === tableTypeFilter;
-      const matchesQuery =
-        !q ||
-        row.description.toLowerCase().includes(q) ||
-        row.category.toLowerCase().includes(q);
-      return matchesType && matchesQuery;
-    });
-  }, [analytics.byDescriptionList, tableTypeFilter, descriptionSearch]);
-
-  const visibleDescriptionRows = showAllDescriptions
-    ? filteredDescriptionRows
-    : filteredDescriptionRows.slice(0, 6);
 
   const periodOptions: { id: PeriodFilter; label: string }[] = [
     { id: 'month', label: 'Mês Atual' },
@@ -817,213 +745,6 @@ export function FinancialDashboard({
             </div>
           </div>
         </motion.div>
-
-      {/* Breakdown Table Separated by Launch Description */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
-        className="bg-card-bg rounded-3xl border border-white/5 p-6 space-y-5"
-      >
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h4 className="text-sm font-bold text-white tracking-tight">
-              Detalhamento por Descrição de Lançamento
-            </h4>
-            <p className="text-xs text-zinc-500 mt-0.5">
-              Consolidado agrupado por descrição · {filteredDescriptionRows.length}{' '}
-              {filteredDescriptionRows.length === 1 ? 'descrição' : 'descrições'}
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="inline-flex items-center gap-1 p-1 bg-dark-bg border border-white/5 rounded-xl">
-              {(['Todos', 'Despesa', 'Receita'] as BreakdownTypeFilter[]).map((opt) => (
-                <button
-                  key={opt}
-                  type="button"
-                  onClick={() => setTableTypeFilter(opt)}
-                  className={`px-3 py-1 rounded-lg text-[11px] font-semibold transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                    tableTypeFilter === opt
-                      ? 'bg-zinc-800 text-white'
-                      : 'text-zinc-500 hover:text-zinc-300'
-                  }`}
-                >
-                  {opt === 'Todos' ? 'Todos' : opt === 'Despesa' ? 'Despesas' : 'Receitas'}
-                </button>
-              ))}
-            </div>
-
-            <div className="relative flex-1 sm:w-56">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" size={13} />
-              <input
-                type="text"
-                value={descriptionSearch}
-                onChange={(e) => setDescriptionSearch(e.target.value)}
-                placeholder="Filtrar descrição..."
-                aria-label="Filtrar por descrição de lançamento"
-                className="w-full bg-dark-bg border border-white/5 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-gold transition-colors"
-              />
-            </div>
-          </div>
-        </div>
-
-        {filteredDescriptionRows.length === 0 ? (
-          <div className="py-10 text-center border border-dashed border-white/10 rounded-2xl">
-            <p className="text-xs text-zinc-500">
-              Nenhum lançamento encontrado para este filtro.
-            </p>
-          </div>
-        ) : (
-          <>
-            {/* Mobile Compact Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:hidden">
-              {visibleDescriptionRows.map((row) => {
-                const denom = row.type === 'Receita' ? analytics.totalIn : analytics.totalOut;
-                const share = denom > 0 ? (row.totalValue / denom) * 100 : 0;
-                return (
-                  <div
-                    key={row.key}
-                    className="p-4 rounded-2xl border border-white/5 bg-dark-bg/40 space-y-2.5"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-white truncate">
-                          {row.description}
-                        </p>
-                        <p className="text-[11px] text-zinc-500 truncate">
-                          {row.type} · {row.category} · {row.count}x
-                        </p>
-                      </div>
-                      <span
-                        className={`text-xs font-bold tabular-nums shrink-0 ${
-                          row.type === 'Receita' ? 'text-lime-vibrant' : 'text-rose-soft'
-                        } ${blurClass}`}
-                      >
-                        {row.type === 'Receita' ? '+' : '-'} {formatBRL(row.totalValue)}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-[11px] text-zinc-500 tabular-nums pt-2 border-t border-white/5">
-                      <span>Pago: <span className={`text-zinc-300 ${blurClass}`}>{formatBRL(row.paidValue)}</span></span>
-                      <span>Aberto: <span className={`text-zinc-300 ${blurClass}`}>{formatBRL(row.openValue)}</span></span>
-                      <span>{share.toFixed(0)}%</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Desktop High-Density Table */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead>
-                  <tr className="border-b border-white/5 text-[10px] uppercase tracking-wider text-zinc-500">
-                    <th className="py-2.5 px-3 font-semibold">Descrição</th>
-                    <th className="py-2.5 px-3 font-semibold">Tipo</th>
-                    <th className="py-2.5 px-3 font-semibold text-right">Qtd.</th>
-                    <th className="py-2.5 px-3 font-semibold text-right">Quitado</th>
-                    <th className="py-2.5 px-3 font-semibold text-right">Em Aberto</th>
-                    <th className="py-2.5 px-3 font-semibold text-right">Total</th>
-                    <th className="py-2.5 px-3 font-semibold text-right w-24">Partic.</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/[0.04]">
-                  {visibleDescriptionRows.map((row) => {
-                    const denom = row.type === 'Receita' ? analytics.totalIn : analytics.totalOut;
-                    const share = denom > 0 ? (row.totalValue / denom) * 100 : 0;
-                    return (
-                      <tr
-                        key={row.key}
-                        className="hover:bg-white/[0.02] transition-colors"
-                      >
-                        <td className="py-3 px-3">
-                          <div className="flex flex-col">
-                            <span className="text-white font-medium">{row.description}</span>
-                            <span className="text-[11px] text-zinc-500">
-                              {row.category}
-                              {row.overdueCount > 0 ? ` · ${row.overdueCount} em atraso` : ''}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-3">
-                          <span
-                            className={`font-medium ${
-                              row.type === 'Receita' ? 'text-lime-vibrant' : 'text-rose-soft'
-                            }`}
-                          >
-                            {row.type}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3 text-right text-zinc-400 tabular-nums">
-                          {row.count}
-                        </td>
-                        <td className={`py-3 px-3 text-right text-zinc-300 tabular-nums ${blurClass}`}>
-                          {formatBRL(row.paidValue)}
-                        </td>
-                        <td
-                          className={`py-3 px-3 text-right tabular-nums ${
-                            row.overdueCount > 0
-                              ? 'text-rose-soft'
-                              : row.openValue > 0
-                              ? 'text-[#fbbf24]'
-                              : 'text-zinc-600'
-                          } ${blurClass}`}
-                        >
-                          {formatBRL(row.openValue)}
-                        </td>
-                        <td
-                          className={`py-3 px-3 text-right font-semibold tabular-nums ${
-                            row.type === 'Receita' ? 'text-lime-vibrant' : 'text-white'
-                          } ${blurClass}`}
-                        >
-                          {formatBRL(row.totalValue)}
-                        </td>
-                        <td className="py-3 px-3 text-right tabular-nums">
-                          <div className="flex items-center justify-end gap-2">
-                            <div className="w-12 h-1 bg-zinc-900 rounded-full overflow-hidden">
-                              <div
-                                className={`h-full rounded-full ${
-                                  row.type === 'Receita' ? 'bg-lime-vibrant' : 'bg-gold'
-                                }`}
-                                style={{ width: `${Math.min(share, 100)}%` }}
-                              />
-                            </div>
-                            <span className="text-zinc-400 w-9 text-right">
-                              {share.toFixed(0)}%
-                            </span>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            {filteredDescriptionRows.length > 6 && (
-              <div className="pt-2 flex justify-center">
-                <button
-                  type="button"
-                  onClick={() => setShowAllDescriptions(!showAllDescriptions)}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-white/5 text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/5 transition-colors cursor-pointer whitespace-nowrap shrink-0"
-                >
-                  {showAllDescriptions ? (
-                    <>
-                      <ChevronUp size={14} />
-                      Mostrar menos
-                    </>
-                  ) : (
-                    <>
-                      <ChevronDown size={14} />
-                      Ver todas as {filteredDescriptionRows.length} descrições
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
-          </>
-        )}
-      </motion.div>
     </section>
   );
 }
