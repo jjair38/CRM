@@ -21,7 +21,8 @@ import {
   RefreshCcw,
   FileUp,
   Fingerprint,
-  Shield
+  Shield,
+  CircleDollarSign
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { db } from '@/lib/firebase';
@@ -52,6 +53,8 @@ import { CSVImport } from '@/components/CSVImport';
 import { FutureProjection } from '@/components/FutureProjection';
 import { SecurityLock } from '@/components/SecurityLock';
 import { Toast, ToastType } from '@/components/Toast';
+import { FinancialDashboard } from '@/components/FinancialDashboard';
+import { AllTransactionsModal } from '@/components/AllTransactionsModal';
 import { addDays, startOfDay, isBefore } from 'date-fns';
 import { getDocs } from 'firebase/firestore';
 
@@ -78,6 +81,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'transactions' | 'import'>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAllTransactionsOpen, setIsAllTransactionsOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<any>(null);
   const [showValues, setShowValues] = useState(true);
   const [isAppLocked, setIsAppLocked] = useState(() => {
@@ -259,12 +263,15 @@ export default function Home() {
             <div className="absolute inset-0 flex items-center justify-center">
               <motion.div
                 animate={{ 
-                  y: [0, -4, 0],
-                  filter: ["drop-shadow(0 0 0px rgba(212,175,55,0))", "drop-shadow(0 0 8px rgba(212,175,55,0.4))", "drop-shadow(0 0 0px rgba(212,175,55,0))"]
+                  rotateY: 360,
+                  filter: ["drop-shadow(0 0 0px rgba(212,175,55,0))", "drop-shadow(0 0 15px rgba(212,175,55,0.6))", "drop-shadow(0 0 0px rgba(212,175,55,0))"]
                 }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                transition={{ 
+                  rotateY: { duration: 3, repeat: Infinity, ease: "linear" },
+                  filter: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+                }}
               >
-                <TrendingUp className="text-gold w-12 h-12" strokeWidth={1.5} />
+                <CircleDollarSign className="text-gold w-14 h-14" strokeWidth={1} />
               </motion.div>
             </div>
           </div>
@@ -368,6 +375,14 @@ export default function Home() {
         message={toastConfig.message} 
         type={toastConfig.type} 
         onClose={() => setToastConfig(prev => ({ ...prev, isVisible: false }))} 
+      />
+      <AllTransactionsModal
+        isOpen={isAllTransactionsOpen}
+        onClose={() => setIsAllTransactionsOpen(false)}
+        user={user}
+        onEdit={handleOpenEditModal}
+        onNewTransaction={handleOpenNewModal}
+        showValues={showValues}
       />
       <TransactionModal 
         isOpen={isModalOpen} 
@@ -565,7 +580,7 @@ export default function Home() {
                 showValues={showValues}
                 setShowValues={setShowValues}
                 onRefresh={handleRefresh}
-                onSeeAll={() => setActiveTab('transactions')}
+                onSeeAll={() => setIsAllTransactionsOpen(true)}
               />
             )}
             {activeTab === 'transactions' && (
@@ -639,6 +654,12 @@ function Dashboard({
 
       <section className="space-y-12">
         <UpcomingAlerts user={user} onEdit={onEditTransaction} showValues={showValues} />
+        <FinancialDashboard 
+          user={user} 
+          showValues={showValues} 
+          onNewTransaction={onNewTransaction} 
+          onSeeAll={onSeeAll} 
+        />
         <SummaryCards user={user} showValues={showValues} />
         <FutureProjection user={user} showValues={showValues} />
       </section>
