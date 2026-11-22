@@ -660,7 +660,7 @@ function Dashboard({
           onNewTransaction={onNewTransaction} 
           onSeeAll={onSeeAll} 
         />
-        <SummaryCards user={user} showValues={showValues} />
+        <SummaryCards user={user} showValues={showValues} onEdit={onEditTransaction} />
         <FutureProjection user={user} showValues={showValues} />
       </section>
     </div>
